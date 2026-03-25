@@ -11,39 +11,26 @@ html{scroll-behavior:smooth}
 body{min-height:100vh;overflow-x:hidden;transition:background .7s,color .4s}
 #bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 
-/* ══ GLASS MUSIC BTN ══ */
-.music-btn{
-  position:fixed;top:16px;right:72px;z-index:999;
-  width:46px;height:46px;border-radius:50%;
-  cursor:pointer;border:1px solid rgba(255,255,255,.22);outline:none;
+/* ══ QUIZ BTN — top right ══ */
+.quiz-btn{
+  position:fixed;top:16px;right:16px;z-index:999;
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px 10px 14px;
+  border-radius:50px;cursor:pointer;border:1px solid rgba(255,255,255,.2);outline:none;
   background:rgba(255,255,255,.08);
   backdrop-filter:blur(22px) saturate(200%);
   -webkit-backdrop-filter:blur(22px) saturate(200%);
-  display:flex;align-items:center;justify-content:center;
   transition:all .35s cubic-bezier(.34,1.56,.64,1);
-  box-shadow:0 4px 20px rgba(100,180,255,.3),0 2px 8px rgba(200,160,255,.2),inset 0 1px 0 rgba(255,255,255,.3);
+  box-shadow:0 4px 20px rgba(168,85,247,.35),0 2px 8px rgba(76,201,240,.2),inset 0 1px 0 rgba(255,255,255,.25);
+  font-family:'DM Sans',sans-serif;
 }
-.music-btn:hover{
-  transform:scale(1.12);
-  box-shadow:0 6px 28px rgba(100,180,255,.5),0 4px 14px rgba(200,160,255,.35),inset 0 1px 0 rgba(255,255,255,.35);
+.quiz-btn:hover{
+  transform:scale(1.06) translateY(-1px);
+  box-shadow:0 6px 28px rgba(168,85,247,.55),0 4px 14px rgba(76,201,240,.35),inset 0 1px 0 rgba(255,255,255,.35);
   background:rgba(255,255,255,.14);
 }
-.music-btn.playing{animation:mPulse 3s ease-in-out infinite}
-@keyframes mPulse{
-  0%,100%{box-shadow:0 4px 20px rgba(100,180,255,.35),0 2px 8px rgba(200,160,255,.2),0 0 0 0 rgba(100,180,255,.3),inset 0 1px 0 rgba(255,255,255,.3)}
-  50%{box-shadow:0 4px 20px rgba(100,180,255,.35),0 2px 8px rgba(200,160,255,.2),0 0 0 10px rgba(100,180,255,.0),inset 0 1px 0 rgba(255,255,255,.3)}
-}
-.music-btn svg{width:17px;height:17px;fill:rgba(255,255,255,.92);flex-shrink:0}
-.music-btn.playing svg{display:none}
-.wave-bars{display:none;align-items:center;gap:2.5px;height:18px}
-.music-btn.playing .wave-bars{display:flex}
-.wbar{width:3px;border-radius:2px;background:rgba(255,255,255,.9);animation:wAnim .9s ease-in-out infinite alternate}
-.wbar:nth-child(1){height:5px;animation-delay:0s}
-.wbar:nth-child(2){height:13px;animation-delay:.15s}
-.wbar:nth-child(3){height:8px;animation-delay:.3s}
-.wbar:nth-child(4){height:16px;animation-delay:.08s}
-.wbar:nth-child(5){height:6px;animation-delay:.22s}
-@keyframes wAnim{from{transform:scaleY(.4)}to{transform:scaleY(1.4)}}
+.quiz-btn .qico{font-size:1.1rem;line-height:1}
+.quiz-btn .qtxt{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:.4px;white-space:nowrap}
 
 /* ══ THEME PANEL ══ */
 .t-panel{
@@ -61,6 +48,187 @@ body{min-height:100vh;overflow-x:hidden;transition:background .7s,color .4s}
 .sw3{background:linear-gradient(135deg,#00d2ff,#0077a8)}
 .sw4{background:linear-gradient(135deg,#f72585,#7209b7)}
 .tlbl{font-size:.42rem;color:rgba(255,255,255,.4);letter-spacing:.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;text-align:center}
+
+/* ══════════════════════════════════════════════
+   QUIZ POPUP
+══════════════════════════════════════════════ */
+.quiz-overlay{
+  position:fixed;inset:0;z-index:1000;
+  display:none;align-items:center;justify-content:center;
+  padding:16px;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  animation:overlayIn .3s ease;
+}
+.quiz-overlay.open{display:flex}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+
+.quiz-box{
+  position:relative;
+  width:100%;max-width:500px;
+  max-height:92vh;overflow-y:auto;scrollbar-width:none;
+  border-radius:28px;
+  background:rgba(8,6,20,.92);
+  border:1px solid rgba(255,255,255,.06);
+  padding:36px 28px 28px;
+  animation:boxIn .4s cubic-bezier(.34,1.56,.64,1);
+  /* Glowing moving border */
+  box-shadow:
+    0 0 0 1.5px rgba(168,85,247,.0),
+    0 24px 80px rgba(0,0,0,.7),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+.quiz-box::-webkit-scrollbar{display:none}
+@keyframes boxIn{from{opacity:0;transform:scale(.88) translateY(30px)}to{opacity:1;transform:none}}
+
+/* Moving glow border via pseudo-element */
+.quiz-box::before{
+  content:'';
+  position:absolute;inset:-1.5px;border-radius:29px;z-index:-1;
+  background:conic-gradient(
+    from var(--angle,0deg),
+    #a855f7 0%,
+    #4cc9f0 20%,
+    #f72585 40%,
+    #ffd166 60%,
+    #06d6a0 80%,
+    #a855f7 100%
+  );
+  animation:rotateBorder 3s linear infinite;
+  filter:blur(1px);
+}
+.quiz-box::after{
+  content:'';
+  position:absolute;inset:-1.5px;border-radius:29px;z-index:-1;
+  background:conic-gradient(
+    from var(--angle,0deg),
+    #a855f7 0%,
+    #4cc9f0 20%,
+    #f72585 40%,
+    #ffd166 60%,
+    #06d6a0 80%,
+    #a855f7 100%
+  );
+  animation:rotateBorder 3s linear infinite;
+  filter:blur(14px);
+  opacity:.45;
+}
+@property --angle{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes rotateBorder{to{--angle:360deg}}
+
+/* Quiz close btn */
+.quiz-close{
+  position:absolute;top:14px;right:16px;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;color:rgba(255,255,255,.6);
+  transition:all .2s;
+}
+.quiz-close:hover{background:rgba(255,255,255,.15);color:#fff;transform:scale(1.1)}
+
+/* Progress */
+.quiz-prog-wrap{margin-bottom:20px}
+.quiz-progress-bar{
+  height:3px;border-radius:2px;
+  background:rgba(255,255,255,.08);overflow:hidden;
+}
+.quiz-prog-fill{
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,#a855f7,#4cc9f0,#f72585);
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 8px rgba(168,85,247,.6);
+}
+.quiz-num{font-family:'DM Sans',sans-serif;font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase;font-weight:600}
+
+/* Question */
+.quiz-q{
+  font-family:'Playfair Display',serif;
+  font-size:1.12rem;font-weight:700;
+  color:#f0f0f0;line-height:1.5;
+  margin-bottom:6px;
+}
+.quiz-hint{font-family:'DM Sans',sans-serif;font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:22px;font-style:italic}
+
+/* Options */
+.quiz-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.opt-btn{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:14px;padding:13px 18px;
+  cursor:pointer;text-align:left;
+  font-family:'DM Sans',sans-serif;font-size:.86rem;
+  color:rgba(255,255,255,.75);font-weight:400;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:flex-start;gap:12px;
+  line-height:1.45;
+}
+.opt-btn:hover:not(:disabled){
+  background:rgba(168,85,247,.12);
+  border-color:rgba(168,85,247,.4);
+  color:#fff;transform:translateX(4px);
+  box-shadow:0 4px 20px rgba(168,85,247,.2);
+}
+.opt-btn .opt-letter{
+  width:24px;height:24px;border-radius:8px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:rgba(255,255,255,.5);flex-shrink:0;
+  transition:all .25s;
+}
+.opt-btn:hover:not(:disabled) .opt-letter{background:rgba(168,85,247,.3);border-color:rgba(168,85,247,.6);color:#fff}
+.opt-btn.correct{background:rgba(6,214,160,.15);border-color:rgba(6,214,160,.5);color:#06d6a0;transform:translateX(4px);box-shadow:0 4px 20px rgba(6,214,160,.2)}
+.opt-btn.correct .opt-letter{background:rgba(6,214,160,.3);border-color:#06d6a0;color:#06d6a0}
+.opt-btn.wrong{background:rgba(247,37,133,.1);border-color:rgba(247,37,133,.4);color:rgba(255,100,130,.8)}
+.opt-btn.wrong .opt-letter{background:rgba(247,37,133,.2);border-color:rgba(247,37,133,.5);color:#f72585}
+.opt-btn:disabled{cursor:default;transform:none !important}
+
+/* Feedback */
+.quiz-feedback{
+  border-radius:12px;padding:12px 16px;margin-bottom:18px;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;line-height:1.55;
+  animation:feedIn .3s ease;display:none;
+}
+@keyframes feedIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.quiz-feedback.correct-fb{background:rgba(6,214,160,.1);border:1px solid rgba(6,214,160,.25);color:#a0f5df}
+.quiz-feedback.wrong-fb{background:rgba(247,37,133,.08);border:1px solid rgba(247,37,133,.2);color:#f9a8c0}
+.quiz-feedback .fb-icon{font-size:1rem;margin-right:6px}
+
+/* Next btn */
+.quiz-next{
+  width:100%;padding:13px;border-radius:14px;
+  background:linear-gradient(135deg,#a855f7,#4cc9f0);
+  border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;
+  color:#fff;letter-spacing:.3px;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 4px 20px rgba(168,85,247,.35);
+  display:none;
+}
+.quiz-next:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 8px 28px rgba(168,85,247,.5)}
+
+/* Score screen */
+.quiz-score-wrap{text-align:center;padding:8px 0;display:none}
+.score-emoji{font-size:3.5rem;margin-bottom:12px;display:block;animation:bounce 1s ease infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+.score-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#f0f0f0;margin-bottom:8px}
+.score-num{
+  font-family:'DM Sans',sans-serif;font-size:3rem;font-weight:700;
+  background:linear-gradient(135deg,#a855f7,#4cc9f0,#f72585);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:6px;line-height:1;
+}
+.score-label{font-family:'DM Sans',sans-serif;font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:18px}
+.score-verdict{font-family:'DM Sans',sans-serif;font-size:.9rem;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:24px;padding:14px 18px;background:rgba(255,255,255,.04);border-radius:14px;border:1px solid rgba(255,255,255,.07)}
+.score-restart{
+  padding:12px 32px;border-radius:50px;
+  background:linear-gradient(135deg,#a855f7,#f72585);
+  border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;color:#fff;
+  transition:all .25s;box-shadow:0 4px 18px rgba(168,85,247,.4);
+}
+.score-restart:hover{transform:scale(1.05);box-shadow:0 6px 24px rgba(247,37,133,.5)}
 
 /* ══ SCROLL DOTS ══ */
 .scroll-dots{display:flex;justify-content:center;gap:6px;margin-top:14px}
@@ -139,7 +307,7 @@ body.t-dark .wtxt-head{font-size:.8rem;font-weight:600;color:#eee;margin-bottom:
 body.t-dark .wtxt-body{font-size:.77rem;color:#777;line-height:1.58;font-weight:300}
 body.t-dark .scroll-dots{display:none}
 
-/* ══ T2 CREAM LUXE ══ */
+/* ══ T2 CREAM ══ */
 body.t-cream{background:#f0e6d3;color:#3d2c1e;font-family:'Cormorant Garamond',serif}
 body.t-cream .wrap{max-width:480px;margin:0 auto;padding:72px 0 80px;position:relative;z-index:1}
 body.t-cream .hdr{text-align:center;margin-bottom:28px;padding:0 20px}
@@ -194,7 +362,7 @@ body.t-cream .wtxt-body{font-size:.82rem;color:#7a6450;line-height:1.62}
 body.t-cream .sdot{background:rgba(120,80,40,.15)}
 body.t-cream .sdot.on{background:#c9a96e}
 
-/* ══ T3 MIDNIGHT NOIR ══ */
+/* ══ T3 NOIR ══ */
 body.t-noir{background:linear-gradient(160deg,#020a12 0%,#030f1a 50%,#040d18 100%);color:#c8eaf5;font-family:'Bebas Neue',sans-serif}
 body.t-noir .wrap{max-width:480px;margin:0 auto;padding:72px 18px 80px;position:relative;z-index:1}
 body.t-noir .hdr{text-align:center;margin-bottom:28px}
@@ -241,7 +409,7 @@ body.t-noir .wtxt-head{font-family:'DM Sans',sans-serif;font-size:.78rem;font-we
 body.t-noir .wtxt-body{font-size:.77rem;color:#4a6a7a;line-height:1.58;font-family:'DM Sans',sans-serif;font-weight:300}
 body.t-noir .scroll-dots{display:none}
 
-/* ══ T4 ROYAL GLASS ══ */
+/* ══ T4 ROYAL ══ */
 body.t-royal{background:radial-gradient(ellipse 120% 80% at 50% 0%,#1a0535 0%,#08031a 60%,#000510 100%);color:#e8d5ff;font-family:'DM Sans',sans-serif}
 body.t-royal .wrap{max-width:480px;margin:0 auto;padding:72px 18px 80px;position:relative;z-index:1}
 body.t-royal .hdr{text-align:center;margin-bottom:28px}
@@ -296,21 +464,20 @@ body.t-royal .wtxt-head{font-size:.8rem;font-weight:600;color:#e8d5ff;margin-bot
 body.t-royal .wtxt-body{font-size:.77rem;color:rgba(232,213,255,.5);line-height:1.58;font-weight:300}
 body.t-royal .scroll-dots{display:none}
 
-@media(max-width:380px){.t-panel{padding:8px 6px;gap:6px}.tsw{width:22px;height:22px}.music-btn{right:58px;width:40px;height:40px}}
+@media(max-width:380px){.t-panel{padding:8px 6px;gap:6px}.tsw{width:22px;height:22px}.quiz-btn{right:10px;padding:8px 12px}}
 </style>
 </head>
 <body class="t-dark">
 
 <canvas id="bgCanvas"></canvas>
 
-<button class="music-btn" id="musicBtn" onclick="toggleMusic()" aria-label="Music">
-  <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-  <div class="wave-bars">
-    <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
-    <div class="wbar"></div><div class="wbar"></div>
-  </div>
+<!-- Quiz Trigger Button -->
+<button class="quiz-btn" onclick="openQuiz()" aria-label="Take Quiz">
+  <span class="qico">🧠</span>
+  <span class="qtxt">Mind Quiz</span>
 </button>
 
+<!-- Theme Panel -->
 <div class="t-panel">
   <div class="tsw sw1 on" onclick="setTheme('dark')"></div><div class="tlbl">Aura</div>
   <div class="tsw sw2" onclick="setTheme('cream')"></div><div class="tlbl">Luxe</div>
@@ -318,6 +485,37 @@ body.t-royal .scroll-dots{display:none}
   <div class="tsw sw4" onclick="setTheme('royal')"></div><div class="tlbl">Royal</div>
 </div>
 
+<!-- ════ QUIZ POPUP ════ -->
+<div class="quiz-overlay" id="quizOverlay" onclick="overlayClick(event)">
+  <div class="quiz-box" id="quizBox">
+    <button class="quiz-close" onclick="closeQuiz()" aria-label="Close">✕</button>
+
+    <!-- Question View -->
+    <div id="quizView">
+      <div class="quiz-prog-wrap">
+        <div class="quiz-num" id="qNum">Question 1 of 13</div>
+        <div class="quiz-progress-bar"><div class="quiz-prog-fill" id="progFill" style="width:7.7%"></div></div>
+      </div>
+      <div class="quiz-q" id="qText"></div>
+      <div class="quiz-hint" id="qHint"></div>
+      <div class="quiz-opts" id="qOpts"></div>
+      <div class="quiz-feedback" id="qFeedback"></div>
+      <button class="quiz-next" id="qNext" onclick="nextQ()">Next Question →</button>
+    </div>
+
+    <!-- Score View -->
+    <div class="quiz-score-wrap" id="scoreView">
+      <span class="score-emoji" id="scoreEmoji">🎉</span>
+      <div class="score-title" id="scoreTitle">Quiz Complete!</div>
+      <div class="score-num" id="scoreNum">0/13</div>
+      <div class="score-label">Correct Answers</div>
+      <div class="score-verdict" id="scoreVerdict"></div>
+      <button class="score-restart" onclick="restartQuiz()">🔄 Try Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Page -->
 <div class="wrap">
   <header class="hdr">
     <div class="ring">
@@ -355,338 +553,469 @@ body.t-royal .scroll-dots{display:none}
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   CANVAS — Real Galaxy Stars + Shooting Stars
-═══════════════════════════════════════════════ */
-const cvs = document.getElementById('bgCanvas');
-const ctx = cvs.getContext('2d');
-let W, H;
+/* ══════════════════════════════════════
+   GALAXY + SHOOTING STARS CANVAS
+══════════════════════════════════════ */
+const cvs=document.getElementById('bgCanvas');
+const ctx=cvs.getContext('2d');
+let W,H,starPool=[],shooters=[],nebCanvas=null;
 
-/* ── GALAXY STAR SYSTEM ── */
-const STAR_COUNT = 320;
-const stars = [];
-
-class Star {
-  constructor() { this.init(); }
-  init() {
-    this.x = Math.random() * (typeof W !== 'undefined' ? W : 400);
-    this.y = Math.random() * (typeof H !== 'undefined' ? H : 800);
-    /* Size distribution: mostly tiny, few big */
-    const r = Math.random();
-    if (r < 0.72)      this.r = 0.18 + Math.random() * 0.45;  // tiny
-    else if (r < 0.92) this.r = 0.5  + Math.random() * 0.7;   // medium
-    else               this.r = 1.1  + Math.random() * 1.1;   // bright
-
-    /* Twinkle */
-    this.baseAlpha = 0.25 + Math.random() * 0.65;
-    this.alpha = this.baseAlpha;
-    this.twinkleSpeed = 0.004 + Math.random() * 0.018;
-    this.twinklePhase = Math.random() * Math.PI * 2;
-    this.twinkleAmp = 0.15 + Math.random() * 0.45;
-
-    /* Colour — blue-white, warm white, blue, slight gold */
-    const ct = Math.random();
-    if (ct < 0.55)      { this.h = 210 + Math.random()*40; this.s = 30 + Math.random()*40; } // blue-white
-    else if (ct < 0.78) { this.h = 200 + Math.random()*20; this.s = 10 + Math.random()*20; } // pure white
-    else if (ct < 0.92) { this.h = 190 + Math.random()*30; this.s = 60 + Math.random()*30; } // blue
-    else                { this.h = 40  + Math.random()*20; this.s = 55 + Math.random()*30; } // warm/gold
-
-    /* Occasional cross-sparkle for bright stars */
-    this.sparkle = this.r > 1.0;
-
-    /* Slow drift */
-    this.vx = (Math.random() - 0.5) * 0.015;
-    this.vy = (Math.random() - 0.5) * 0.015;
+class Star{
+  constructor(){this.init()}
+  init(){
+    this.x=Math.random()*(W||window.innerWidth);
+    this.y=Math.random()*(H||window.innerHeight);
+    const r=Math.random();
+    if(r<.72) this.r=.18+Math.random()*.45;
+    else if(r<.92) this.r=.5+Math.random()*.7;
+    else this.r=1.1+Math.random()*1.1;
+    this.baseAlpha=.25+Math.random()*.65;
+    this.alpha=this.baseAlpha;
+    this.twinkleSpeed=.004+Math.random()*.018;
+    this.twinklePhase=Math.random()*Math.PI*2;
+    this.twinkleAmp=.15+Math.random()*.45;
+    const ct=Math.random();
+    if(ct<.55){this.h=210+Math.random()*40;this.s=30+Math.random()*40}
+    else if(ct<.78){this.h=200+Math.random()*20;this.s=10+Math.random()*20}
+    else if(ct<.92){this.h=190+Math.random()*30;this.s=60+Math.random()*30}
+    else{this.h=40+Math.random()*20;this.s=55+Math.random()*30}
+    this.sparkle=this.r>1.0;
+    this.vx=(Math.random()-.5)*.015;
+    this.vy=(Math.random()-.5)*.015;
   }
-  update(t) {
-    this.twinklePhase += this.twinkleSpeed;
-    this.alpha = this.baseAlpha + Math.sin(this.twinklePhase) * this.twinkleAmp * this.baseAlpha;
-    this.alpha = Math.max(0.02, Math.min(1, this.alpha));
-    this.x += this.vx; this.y += this.vy;
-    if (this.x < -2) this.x = W + 2;
-    if (this.x > W + 2) this.x = -2;
-    if (this.y < -2) this.y = H + 2;
-    if (this.y > H + 2) this.y = -2;
+  update(){
+    this.twinklePhase+=this.twinkleSpeed;
+    this.alpha=this.baseAlpha+Math.sin(this.twinklePhase)*this.twinkleAmp*this.baseAlpha;
+    this.alpha=Math.max(.02,Math.min(1,this.alpha));
+    this.x+=this.vx;this.y+=this.vy;
+    if(this.x<-2)this.x=W+2;if(this.x>W+2)this.x=-2;
+    if(this.y<-2)this.y=H+2;if(this.y>H+2)this.y=-2;
   }
-  draw() {
-    const a = this.alpha;
-    /* Outer glow halo */
-    if (this.r > 0.5) {
-      const halo = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 4.5);
-      halo.addColorStop(0, `hsla(${this.h},${this.s}%,92%,${(a * 0.28).toFixed(3)})`);
-      halo.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.r * 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = halo; ctx.fill();
+  draw(){
+    const a=this.alpha;
+    if(this.r>.5){
+      const halo=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*4.5);
+      halo.addColorStop(0,`hsla(${this.h},${this.s}%,92%,${(a*.28).toFixed(3)})`);
+      halo.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath();ctx.arc(this.x,this.y,this.r*4.5,0,Math.PI*2);
+      ctx.fillStyle=halo;ctx.fill();
     }
-    /* Core dot */
-    const core = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 1.6);
-    core.addColorStop(0, `hsla(${this.h},${this.s}%,100%,${a.toFixed(3)})`);
-    core.addColorStop(0.5, `hsla(${this.h},${this.s}%,92%,${(a * 0.7).toFixed(3)})`);
-    core.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r * 1.6, 0, Math.PI * 2);
-    ctx.fillStyle = core; ctx.fill();
-    /* Cross sparkle for bright stars */
-    if (this.sparkle) {
-      const len = this.r * (4 + Math.sin(this.twinklePhase * 0.7) * 1.5);
-      const sa = a * 0.55;
-      ctx.save();
-      ctx.globalAlpha = sa;
-      ctx.strokeStyle = `hsla(${this.h},${this.s}%,98%,1)`;
-      ctx.lineWidth = 0.6;
-      // Horizontal spike
-      const hg = ctx.createLinearGradient(this.x - len, this.y, this.x + len, this.y);
-      hg.addColorStop(0,'rgba(255,255,255,0)'); hg.addColorStop(0.5,'rgba(255,255,255,1)'); hg.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.beginPath(); ctx.moveTo(this.x - len, this.y); ctx.lineTo(this.x + len, this.y);
-      ctx.strokeStyle = hg; ctx.stroke();
-      // Vertical spike
-      const vg = ctx.createLinearGradient(this.x, this.y - len, this.x, this.y + len);
-      vg.addColorStop(0,'rgba(255,255,255,0)'); vg.addColorStop(0.5,'rgba(255,255,255,1)'); vg.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.beginPath(); ctx.moveTo(this.x, this.y - len); ctx.lineTo(this.x, this.y + len);
-      ctx.strokeStyle = vg; ctx.stroke();
+    const core=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*1.6);
+    core.addColorStop(0,`hsla(${this.h},${this.s}%,100%,${a.toFixed(3)})`);
+    core.addColorStop(.5,`hsla(${this.h},${this.s}%,92%,${(a*.7).toFixed(3)})`);
+    core.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();ctx.arc(this.x,this.y,this.r*1.6,0,Math.PI*2);
+    ctx.fillStyle=core;ctx.fill();
+    if(this.sparkle){
+      const len=this.r*(4+Math.sin(this.twinklePhase*.7)*1.5);
+      ctx.save();ctx.globalAlpha=a*.55;ctx.lineWidth=.6;
+      const hg=ctx.createLinearGradient(this.x-len,this.y,this.x+len,this.y);
+      hg.addColorStop(0,'rgba(255,255,255,0)');hg.addColorStop(.5,'rgba(255,255,255,1)');hg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.beginPath();ctx.moveTo(this.x-len,this.y);ctx.lineTo(this.x+len,this.y);ctx.strokeStyle=hg;ctx.stroke();
+      const vg=ctx.createLinearGradient(this.x,this.y-len,this.x,this.y+len);
+      vg.addColorStop(0,'rgba(255,255,255,0)');vg.addColorStop(.5,'rgba(255,255,255,1)');vg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.beginPath();ctx.moveTo(this.x,this.y-len);ctx.lineTo(this.x,this.y+len);ctx.strokeStyle=vg;ctx.stroke();
       ctx.restore();
     }
   }
 }
 
-/* ── SHOOTING STAR (only 2-3 active, with long time gaps) ── */
-class ShootingStar {
-  constructor(idx) {
-    this.idx = idx;
-    this.active = false;
-    /* Stagger initial delays: 3s, 9s, 17s */
-    this.nextFireAt = Date.now() + [3000, 9000, 17000][idx];
+class ShootingStar{
+  constructor(idx){this.idx=idx;this.active=false;this.nextFireAt=Date.now()+[3000,9000,17000][idx]}
+  fire(){
+    this.active=true;
+    const edge=Math.random()<.6?'top':'left';
+    if(edge==='top'){this.x=Math.random()*W*.75;this.y=Math.random()*H*.05-20}
+    else{this.x=Math.random()*10-20;this.y=Math.random()*H*.4}
+    const angle=(28+Math.random()*26)*Math.PI/180;
+    const speed=7+Math.random()*8;
+    this.vx=Math.cos(angle)*speed;this.vy=Math.sin(angle)*speed;
+    this.tailLen=100+Math.random()*180;this.width=1+Math.random()*1.2;
+    this.golden=Math.random()<.28;
+    this.hue=this.golden?45:210+Math.random()*30;
+    this.maxLife=55+Math.random()*35;this.life=0;this.alpha=0;
   }
-  fire() {
-    this.active = true;
-    /* Start: anywhere along top 60% of screen, or left edge */
-    const edge = Math.random() < 0.6 ? 'top' : 'left';
-    if (edge === 'top') {
-      this.x = Math.random() * W * 0.75;
-      this.y = Math.random() * H * 0.05 - 20;
-    } else {
-      this.x = Math.random() * 10 - 20;
-      this.y = Math.random() * H * 0.4;
-    }
-    const angle = (28 + Math.random() * 26) * Math.PI / 180;
-    const speed = 7 + Math.random() * 8;
-    this.vx = Math.cos(angle) * speed;
-    this.vy = Math.sin(angle) * speed;
-    this.tailLen = 100 + Math.random() * 180;
-    this.width = 1.0 + Math.random() * 1.2;
-    /* Golden or icy white */
-    this.golden = Math.random() < 0.28;
-    this.hue = this.golden ? 45 : 210 + Math.random() * 30;
-    this.maxLife = 55 + Math.random() * 35;
-    this.life = 0;
-    this.alpha = 0;
-  }
-  update() {
-    const now = Date.now();
-    if (!this.active) {
-      if (now >= this.nextFireAt) this.fire();
-      return;
-    }
+  update(){
+    if(!this.active){if(Date.now()>=this.nextFireAt)this.fire();return}
     this.life++;
-    const prog = this.life / this.maxLife;
-    /* Fade in first 15%, hold, fade out last 30% */
-    if (prog < 0.15)      this.alpha = prog / 0.15;
-    else if (prog > 0.7)  this.alpha = (1 - prog) / 0.3;
-    else                  this.alpha = 1.0;
-    this.x += this.vx; this.y += this.vy;
-    if (this.life >= this.maxLife || this.x > W + 60 || this.y > H + 60) {
-      this.active = false;
-      /* Next fire: 6–18 seconds gap */
-      this.nextFireAt = Date.now() + 6000 + Math.random() * 12000;
+    const prog=this.life/this.maxLife;
+    if(prog<.15)this.alpha=prog/.15;
+    else if(prog>.7)this.alpha=(1-prog)/.3;
+    else this.alpha=1.0;
+    this.x+=this.vx;this.y+=this.vy;
+    if(this.life>=this.maxLife||this.x>W+60||this.y>H+60){
+      this.active=false;this.nextFireAt=Date.now()+6000+Math.random()*12000;
     }
   }
-  draw() {
-    if (!this.active || this.alpha <= 0) return;
-    const mag = Math.hypot(this.vx, this.vy);
-    const tailX = this.x - (this.vx / mag) * this.tailLen;
-    const tailY = this.y - (this.vy / mag) * this.tailLen;
-
-    /* Tail gradient */
-    const grd = ctx.createLinearGradient(tailX, tailY, this.x, this.y);
-    grd.addColorStop(0, `hsla(${this.hue},70%,96%,0)`);
-    grd.addColorStop(0.55, `hsla(${this.hue},75%,96%,${(this.alpha * 0.35).toFixed(3)})`);
-    grd.addColorStop(1, `hsla(${this.hue},80%,100%,${(this.alpha * 0.9).toFixed(3)})`);
-
+  draw(){
+    if(!this.active||this.alpha<=0)return;
+    const mag=Math.hypot(this.vx,this.vy);
+    const tailX=this.x-(this.vx/mag)*this.tailLen;
+    const tailY=this.y-(this.vy/mag)*this.tailLen;
+    const grd=ctx.createLinearGradient(tailX,tailY,this.x,this.y);
+    grd.addColorStop(0,`hsla(${this.hue},70%,96%,0)`);
+    grd.addColorStop(.55,`hsla(${this.hue},75%,96%,${(this.alpha*.35).toFixed(3)})`);
+    grd.addColorStop(1,`hsla(${this.hue},80%,100%,${(this.alpha*.9).toFixed(3)})`);
     ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(tailX, tailY);
-    ctx.lineTo(this.x, this.y);
-    ctx.strokeStyle = grd;
-    ctx.lineWidth = this.width;
-    ctx.lineCap = 'round';
-    ctx.shadowBlur = 6;
-    ctx.shadowColor = `hsla(${this.hue},80%,100%,${(this.alpha * 0.5).toFixed(3)})`;
+    ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(this.x,this.y);
+    ctx.strokeStyle=grd;ctx.lineWidth=this.width;ctx.lineCap='round';
+    ctx.shadowBlur=6;ctx.shadowColor=`hsla(${this.hue},80%,100%,${(this.alpha*.5).toFixed(3)})`;
     ctx.stroke();
-
-    /* Head bright glow */
-    const hg = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 5);
-    hg.addColorStop(0, `hsla(${this.hue},70%,100%,${(this.alpha * 0.95).toFixed(3)})`);
-    hg.addColorStop(0.5, `hsla(${this.hue},70%,95%,${(this.alpha * 0.4).toFixed(3)})`);
-    hg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.beginPath(); ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = hg; ctx.fill();
-
-    /* Mini sparkle dust near head */
-    for (let i = 0; i < 3; i++) {
-      const px = this.x + (Math.random() - 0.5) * 8;
-      const py = this.y + (Math.random() - 0.5) * 8;
-      ctx.beginPath(); ctx.arc(px, py, Math.random() * 1.1, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${this.hue},70%,100%,${(this.alpha * Math.random() * 0.5).toFixed(3)})`;
-      ctx.fill();
-    }
+    const hg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,5);
+    hg.addColorStop(0,`hsla(${this.hue},70%,100%,${(this.alpha*.95).toFixed(3)})`);
+    hg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.beginPath();ctx.arc(this.x,this.y,5,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();
     ctx.restore();
   }
 }
 
-/* ── NEBULA BLOBS (painted once to offscreen canvas for perf) ── */
-let nebCanvas = null;
-function buildNebula() {
-  nebCanvas = document.createElement('canvas');
-  nebCanvas.width = W; nebCanvas.height = H;
-  const nc = nebCanvas.getContext('2d');
-  nc.fillStyle = '#06101b'; nc.fillRect(0, 0, W, H);
-  const blobs = [
-    [W * 0.08, H * 0.18, 'rgba(18,0,70,.09)', W * 0.48],
-    [W * 0.82, H * 0.62, 'rgba(0,40,100,.07)', W * 0.42],
-    [W * 0.45, H * 0.42, 'rgba(55,0,45,.06)', W * 0.52],
-    [W * 0.25, H * 0.75, 'rgba(0,30,80,.05)', W * 0.35],
-    [W * 0.7,  H * 0.2,  'rgba(30,0,60,.06)', W * 0.3],
-  ];
-  blobs.forEach(([x,y,c,r]) => {
-    const g = nc.createRadialGradient(x,y,0,x,y,r);
-    g.addColorStop(0,c); g.addColorStop(1,'rgba(0,0,0,0)');
-    nc.fillStyle = g; nc.fillRect(0,0,W,H);
+function buildNebula(){
+  nebCanvas=document.createElement('canvas');
+  nebCanvas.width=W;nebCanvas.height=H;
+  const nc=nebCanvas.getContext('2d');
+  nc.fillStyle='#06101b';nc.fillRect(0,0,W,H);
+  [[W*.08,H*.18,'rgba(18,0,70,.09)',W*.48],[W*.82,H*.62,'rgba(0,40,100,.07)',W*.42],[W*.45,H*.42,'rgba(55,0,45,.06)',W*.52],[W*.25,H*.75,'rgba(0,30,80,.05)',W*.35],[W*.7,H*.2,'rgba(30,0,60,.06)',W*.3]].forEach(([x,y,c,r])=>{
+    const g=nc.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');
+    nc.fillStyle=g;nc.fillRect(0,0,W,H);
   });
 }
 
-/* ── INIT ── */
-let starPool = [];
-let shooters = [];
-
-function resize() {
-  W = cvs.width = window.innerWidth;
-  H = cvs.height = window.innerHeight;
-  buildNebula();
-  /* Re-init stars preserving some positions */
-  starPool = [];
-  for (let i = 0; i < STAR_COUNT; i++) starPool.push(new Star());
+function resize(){
+  W=cvs.width=window.innerWidth;H=cvs.height=window.innerHeight;
+  buildNebula();starPool=[];
+  for(let i=0;i<320;i++)starPool.push(new Star());
 }
-window.addEventListener('resize', resize);
-resize();
-/* Separate shooter instances (2-3) */
-shooters = [new ShootingStar(0), new ShootingStar(1), new ShootingStar(2)];
+window.addEventListener('resize',resize);resize();
+shooters=[new ShootingStar(0),new ShootingStar(1),new ShootingStar(2)];
 
-/* ── ANIMATION LOOP ── */
-function anim() {
+function anim(){
   requestAnimationFrame(anim);
-  const isCream = document.body.className === 't-cream';
-
-  if (isCream) {
-    ctx.fillStyle = 'rgba(240,230,211,.97)'; ctx.fillRect(0,0,W,H);
-    const g = ctx.createRadialGradient(W*.18,H*.15,0,W*.18,H*.15,W*.5);
-    g.addColorStop(0,'rgba(201,169,110,.09)'); g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    /* Shooting stars still visible in cream — golden only */
-    shooters.forEach(s => { s.update(); if (s.active && s.golden) s.draw(); });
+  const isCream=document.body.className==='t-cream';
+  if(isCream){
+    ctx.fillStyle='rgba(240,230,211,.97)';ctx.fillRect(0,0,W,H);
+    const g=ctx.createRadialGradient(W*.18,H*.15,0,W*.18,H*.15,W*.5);
+    g.addColorStop(0,'rgba(201,169,110,.09)');g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    shooters.forEach(s=>{s.update();if(s.active&&s.golden)s.draw();});
     return;
   }
-
-  /* Draw cached nebula */
-  ctx.drawImage(nebCanvas, 0, 0);
-
-  /* Galaxy stars */
-  starPool.forEach(s => { s.update(); s.draw(); });
-
-  /* Shooting stars */
-  shooters.forEach(s => { s.update(); s.draw(); });
+  ctx.drawImage(nebCanvas,0,0);
+  starPool.forEach(s=>{s.update();s.draw();});
+  shooters.forEach(s=>{s.update();s.draw();});
 }
 anim();
 
-/* ═══════════════════════════════════════════════
-   CONTENT DATA
-═══════════════════════════════════════════════ */
-const D = {
-  psych:{
-    en:["<strong>Your brain lies to you — constantly.</strong> Cognitive biases shape every decision without you noticing. Learn to catch them before they catch you.","<strong>Self-sabotage is a trauma response,</strong> not laziness. Understanding the root makes it easier to rewire the pattern and finally break the loop.","<strong>Silence is a psychological weapon.</strong> People comfortable with silence hold far more social power than those who rush to fill it — master the pause.","<strong>Spot the Dark Triad early.</strong> Narcissism, Machiavellianism, and psychopathy appear in everyday people. Know the signs before they drain your energy.","<strong>You become your environment.</strong> Mirror neurons mean your habits, moods, and beliefs are literally shaped by who you spend time with. Choose your circle wisely."],
-    hi:["<strong>Aapka dimag aapko jhoot bolta hai — baar baar.</strong> Cognitive biases aapke har faisle ko influence karte hain. Inhe pakadna seekhein isse pehle ki ye aapko pakad lein.","<strong>Self-sabotage ek trauma response hai,</strong> aalsapan nahi. Root cause samajhna pattern todne mein madad karta hai.","<strong>Khamoshi ek psychological weapon hai.</strong> Jo log khamoshi se comfortable hain unke paas zyada social power hoti hai — is pause ko master karein.","<strong>Dark Triad ko jaldi pehchano.</strong> Signs jaanein isse pehle ki ye aapki energy drain karein.","<strong>Aap apna environment ban jaate hain.</strong> Apna circle samajhdaari se chunein."]
+/* ══════════════════════════════════════
+   QUIZ DATA — 13 Psychological Questions
+   with Sense of Humour
+══════════════════════════════════════ */
+const QUESTIONS = [
+  {
+    q: "You're in a meeting that could have been an email. Your brain does what?",
+    hint: "(Be honest. We already know.)",
+    opts: [
+      "Plans your entire life for the next 40 years",
+      "Nods professionally while mentally decorating your dream apartment",
+      "Counts ceiling tiles and names them",
+      "Actually pays attention. You're suspiciously productive."
+    ],
+    correct: 1,
+    feedback: "✅ Spot on! The brain defaults to mind-wandering when under-stimulated. Called Default Mode Network activation — you're not lazy, you're neurologically normal. Mostly."
   },
-  self:{
-    en:["<strong>Discipline beats motivation every time.</strong> Motivation fades. Build systems that force action even when you don't feel like it.","<strong>You don't rise to your goals — you fall to your identity.</strong> Change who you believe you are first. The right actions follow automatically.","<strong>1% better every single day</strong> compounds into 37× improvement in one year. Tiny, consistent edges beat big, inconsistent leaps.","<strong>Your brain doesn't multitask — it switches, losing quality each time.</strong> Deep single-tasking is the real superpower of every high performer.","<strong>The first 90 minutes after waking</strong> are when your brain is most receptive. Guard that window — it sets the tone for everything that follows."],
-    hi:["<strong>Discipline hamesha motivation ko haraata hai.</strong> Aisi systems banayein jo tab bhi action force karein jab mann na ho.","<strong>Aap apne goals tak nahi pahunchte — apni identity tak girte hain.</strong> Pehle khud ke baare mein apna belief badlein.","<strong>Roz 1% behtar hona</strong> ek saal mein 37 guna improvement mein compound ho jaata hai.","<strong>Aapka brain multitask nahi karta.</strong> Deep single-tasking hi har high performer ka asli superpower hai.","<strong>Uthne ke baad pehle 90 minutes</strong> mein aapka brain sabse zyada receptive hota hai. Us window ki raksha karein."]
+  {
+    q: "Someone cancels plans you were secretly dreading. Your real emotion is:",
+    hint: "(Psychology calls this 'relief disguised as disappointment')",
+    opts: [
+      "Genuine disappointment — you love socialising",
+      "Pure relief so overwhelming you do a little dance alone",
+      "Guilt for feeling relieved, then relief about feeling guilty",
+      "You immediately reschedule because you enjoy suffering"
+    ],
+    correct: 1,
+    feedback: "✅ Correct! This is called 'anticipatory anxiety relief' — the brain releases dopamine when an expected threat disappears. Your inner introvert just won."
   },
-  biz:{
-    en:["<strong>Waiting for perfect conditions is just fear wearing a business plan.</strong> Your first version will be imperfect — ship it anyway.","<strong>Build your audience before your product.</strong> 1,000 true fans who trust you are worth more than 100,000 who don't.","<strong>Revenue solves most problems.</strong> Make your first ₹10,000, then learn to repeat it every single month.","<strong>In the creator economy, you are the moat.</strong> People don't buy products — they buy from people they trust.","<strong>Systems scale. Hustle doesn't.</strong> Build SOPs, delegate, automate — let the machine run itself."],
-    hi:["<strong>Perfect conditions ka intezaar karna sirf darr hai jo business plan pehne hua hai.</strong> Phir bhi launch karein.","<strong>Product se pehle apni audience banayein.</strong> 1,000 sachche fans 100,000 se kahin zyada valuable hain.","<strong>Revenue zyaadatar problems solve karti hai.</strong> Apna pehla ₹10,000 kamayen, phir repeat karna seekhein.","<strong>Creator economy mein, aap hi moat hain.</strong> Aapki reputation aapka sabse scalable asset hai.","<strong>Systems scale karte hain. Hustle nahi.</strong> SOPs banayein, delegate karein, automate karein."]
+  {
+    q: "What do you actually do when someone says 'be honest'?",
+    hint: "(Social psychology says you already know this one)",
+    opts: [
+      "Tell the complete truth, consequences be damned",
+      "Tell a carefully filtered version of the truth that still makes you look good",
+      "Say 'I don't know' and let them figure it out",
+      "Immediately become very interested in your phone"
+    ],
+    correct: 1,
+    feedback: "✅ Nailed it! This is called impression management — a fundamental human social behaviour. Honesty filtered through self-preservation. Very relatable. Very human."
   },
-  extra:{
-    en:["<strong>Your network is your real net worth.</strong> The right introduction, the right mentor, the right room — these change trajectories overnight.","<strong>Reading is unfair advantage.</strong> You gain decades of someone's experience in hours. 12 books a year changes everything.","<strong>Failure is just feedback in disguise.</strong> Every stumble carries a precise instruction manual for success.","<strong>Your comfort zone is shrinking your income.</strong> Every skill you avoid has a price. And you're already paying it.","<strong>Time is the only non-renewable resource.</strong> Build with urgency, rest with intention, never confuse busy with productive."],
-    hi:["<strong>Aapka network hi aapki asli net worth hai.</strong> Relationships mein tab invest karein jab zaroorat na ho.","<strong>Padhna ek unfair advantage hai.</strong> Saal mein 12 kitabein padhna sab kuch badal deta hai.","<strong>Failure sirf disguise mein feedback hai.</strong> Har thokar mein success ka instruction manual hota hai.","<strong>Aapka comfort zone aapki income shrink kar raha hai.</strong> Har avoided skill ka ek price hai.","<strong>Time hi aapka ek non-renewable resource hai.</strong> Urgency ke saath build karein, intention ke saath rest karein."]
+  {
+    q: "It's 2 AM. Rational you went to sleep hours ago. Who is this creature still scrolling?",
+    hint: "(This has an actual scientific name, by the way)",
+    opts: [
+      "Your future self making terrible decisions for current you",
+      "Your inner goblin who thrives in chaos",
+      "Revenge bedtime procrastination — your brain protesting a busy day",
+      "A ghost. You don't even remember falling asleep."
+    ],
+    correct: 2,
+    feedback: "✅ Yes! 'Revenge Bedtime Procrastination' is a real term — staying up late to reclaim personal time you didn't have during the day. Your brain is literally protesting being busy. Respect."
+  },
+  {
+    q: "Someone criticises your work. Inside your head, what actually happens first?",
+    hint: "(In milliseconds, before the 'mature response' kicks in)",
+    opts: [
+      "Immediate calm acceptance — you love constructive feedback",
+      "A brief internal meltdown, then composure, then pretending it was fine",
+      "You mentally write a 3-page rebuttal you'll never send",
+      "You agree loudly while never changing anything"
+    ],
+    correct: 1,
+    feedback: "✅ That's it! This is the amygdala hijack — your emotional brain reacts before your logical brain even registers the words. The meltdown happens in milliseconds. The composure takes effort. You're not sensitive, you're human."
+  },
+  {
+    q: "You open a 20-tab browser and then immediately forget why. This is called:",
+    hint: "(There is actually a name for this phenomenon)",
+    opts: [
+      "Multi-tasking genius mode",
+      "The Doorway Effect — location change causes memory glitch",
+      "Spontaneous dementia (temporary, hopefully)",
+      "Your laptop is also confused and you two are in sync"
+    ],
+    correct: 1,
+    feedback: "✅ The Doorway Effect is real! Psychologist Gabriel Radvansky found that walking through doorways (or switching contexts) causes the brain to file away active memories. You forgot because your brain thought you moved on. Not your fault."
+  },
+  {
+    q: "You deeply relate to a movie villain. This probably means:",
+    hint: "(Don't panic. The answer might surprise you.)",
+    opts: [
+      "You have concerning personality traits that need immediate attention",
+      "You're suppressing something they represent — power, freedom, being fed up",
+      "You have excellent taste in cinematography",
+      "The hero was just badly written and you noticed"
+    ],
+    correct: 1,
+    feedback: "✅ Correct! Psychologists call this 'shadow projection' — relating to villains often signals suppressed desires for autonomy, recognition, or rebellion. Your psyche is asking you to examine what you're not allowing yourself to want."
+  },
+  {
+    q: "You see a 'Do Not Touch' sign. Your first instinct is:",
+    hint: "(Your answer reveals something about your personality)",
+    opts: [
+      "Obey it immediately without a second thought",
+      "Not touch it, but spend 30 seconds thinking about touching it",
+      "Touch it. Obviously. Why is there even a sign.",
+      "Wonder who put the sign there and their whole deal"
+    ],
+    correct: 2,
+    feedback: "✅ If you thought 'touch it' — that's Psychological Reactance! Humans instinctively resist perceived threats to their freedom. The sign doesn't just warn, it also dares. Your brain just responded to a dare."
+  },
+  {
+    q: "A stranger is rude to you. You replay the interaction for:",
+    hint: "(Negativity Bias is a real thing and you've definitely experienced it)",
+    opts: [
+      "Exactly 0 seconds. You immediately let it go like a zen monk.",
+      "5 minutes, then it's gone",
+      "3 days. You've mentally confronted them 47 times with devastating comebacks.",
+      "You can't remember — too busy replaying something from 2014"
+    ],
+    correct: 2,
+    feedback: "✅ Welcome to Negativity Bias! The brain processes negative events 5x more intensely than positive ones — it's a survival mechanism. You're not dramatic, you're evolved. Those 47 comebacks were just your amygdala doing cardio."
+  },
+  {
+    q: "You finally finish a huge task. Your brain immediately does what?",
+    hint: "(This one will make you feel very called out)",
+    opts: [
+      "Celebrates appropriately and feels satisfied",
+      "Starts worrying about the next thing before the feeling even lands",
+      "Forgets you finished and starts the task again",
+      "Rewards you with 4 hours of guilt-free rest. (lol no)"
+    ],
+    correct: 1,
+    feedback: "✅ Yes! This is called Hedonic Adaptation + Anxiety Substitution. The brain is designed to always find the next 'problem'. Satisfaction is brief by design — it's what kept your ancestors surviving. Unfortunately."
+  },
+  {
+    q: "Someone says 'we need to talk.' Your body's immediate reaction is:",
+    hint: "(Before you even know what it's about)",
+    opts: [
+      "Calm curiosity — could be anything, no reason to panic",
+      "Heart stops, brain runs 300 catastrophic scenarios in 1.2 seconds",
+      "You immediately start confessing things they didn't even know about",
+      "You go completely still and hope they forget"
+    ],
+    correct: 1,
+    feedback: "✅ That's your fight-or-flight response triggered by an ambiguous social threat. The brain treats uncertainty like danger. 'We need to talk' is four words that activate your entire threat-detection system simultaneously."
+  },
+  {
+    q: "You laugh at something dark or awkward when you shouldn't. This means you are:",
+    hint: "(This is actually a well-studied psychological response)",
+    opts: [
+      "A horrible person with poor social calibration",
+      "Experiencing nervous laughter — the brain's stress valve releasing pressure",
+      "Very chaotic neutral energy and proud of it",
+      "Probably just hungry. Low blood sugar does weird things."
+    ],
+    correct: 1,
+    feedback: "✅ Nervous laughter is a genuine neurological response — when the brain is overwhelmed by conflicting signals (threat + social inappropriateness), laughter becomes a release valve. You're not horrible, you're just poorly timed."
+  },
+  {
+    q: "You finally share your dream with someone. They're silent for two seconds. You instantly think:",
+    hint: "(The final boss of the quiz. This one hits different.)",
+    opts: [
+      "They're thoughtfully processing what you said",
+      "They hate it and are searching for a polite way to destroy it",
+      "Technically they could be thinking anything but you've already concluded the worst",
+      "Both B and C simultaneously, at the same time, forever"
+    ],
+    correct: 3,
+    feedback: "✅ This is Mind Reading Bias — we assume silence = rejection. Paired with catastrophising, it's the fastest way to talk yourself out of your own dreams before anyone else even gets a chance to. The two seconds of silence? They were just thinking."
   }
-};
-
-const CARDS=[
-  {id:'psych',icon:'🧠',title:'Psychology',sub:'Mind · Behavior · Patterns',cls:'cp'},
-  {id:'self',icon:'🔥',title:'Self-Improvement',sub:'Habits · Discipline · Growth',cls:'cs'},
-  {id:'biz',icon:'💼',title:'Business Growth',sub:'Strategy · Money · Scale',cls:'cb'},
-  {id:'extra',icon:'✨',title:'Mindset & Success',sub:'Network · Reading · Time',cls:'cn'},
 ];
+
+let currentQ = 0;
+let score = 0;
+let answered = false;
+
+function openQuiz() {
+  currentQ = 0; score = 0; answered = false;
+  document.getElementById('quizView').style.display = 'block';
+  document.getElementById('scoreView').style.display = 'none';
+  document.getElementById('quizOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderQ();
+}
+function closeQuiz() {
+  document.getElementById('quizOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function overlayClick(e) {
+  if (e.target === document.getElementById('quizOverlay')) closeQuiz();
+}
+
+function renderQ() {
+  const q = QUESTIONS[currentQ];
+  answered = false;
+  const num = currentQ + 1;
+  document.getElementById('qNum').textContent = `Question ${num} of ${QUESTIONS.length}`;
+  document.getElementById('progFill').style.width = ((num / QUESTIONS.length) * 100) + '%';
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('qHint').textContent = q.hint;
+
+  const letters = ['A','B','C','D'];
+  const opts = document.getElementById('qOpts');
+  opts.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${o}</span>`;
+    btn.onclick = () => selectOpt(i, btn);
+    opts.appendChild(btn);
+  });
+
+  const fb = document.getElementById('qFeedback');
+  fb.style.display = 'none'; fb.textContent = '';
+  document.getElementById('qNext').style.display = 'none';
+
+  // Scroll to top of quiz box
+  document.getElementById('quizBox').scrollTop = 0;
+}
+
+function selectOpt(idx, btn) {
+  if (answered) return;
+  answered = true;
+  const q = QUESTIONS[currentQ];
+  const btns = document.querySelectorAll('.opt-btn');
+
+  btns.forEach(b => b.disabled = true);
+
+  if (idx === q.correct) {
+    score++;
+    btn.classList.add('correct');
+    const fb = document.getElementById('qFeedback');
+    fb.className = 'quiz-feedback correct-fb';
+    fb.innerHTML = q.feedback;
+    fb.style.display = 'block';
+  } else {
+    btn.classList.add('wrong');
+    btns[q.correct].classList.add('correct');
+    const fb = document.getElementById('qFeedback');
+    fb.className = 'quiz-feedback wrong-fb';
+    fb.innerHTML = `<span class="fb-icon">❌</span> Not quite! The answer was <strong>${['A','B','C','D'][q.correct]}</strong>. ${q.feedback.replace('✅ ','')}`;
+    fb.style.display = 'block';
+  }
+
+  const nextBtn = document.getElementById('qNext');
+  nextBtn.style.display = 'block';
+  nextBtn.textContent = currentQ < QUESTIONS.length - 1 ? 'Next Question →' : 'See My Results 🎯';
+  setTimeout(() => { document.getElementById('quizBox').scrollTop = 999; }, 100);
+}
+
+function nextQ() {
+  currentQ++;
+  if (currentQ >= QUESTIONS.length) {
+    showScore();
+  } else {
+    renderQ();
+  }
+}
+
+function showScore() {
+  document.getElementById('quizView').style.display = 'none';
+  document.getElementById('scoreView').style.display = 'block';
+  document.getElementById('scoreNum').textContent = `${score}/13`;
+
+  let emoji, title, verdict;
+  if (score === 13) {
+    emoji = '🧠✨'; title = 'You Are Psychology Itself';
+    verdict = 'Either you study psychology, or you\'ve been observing humans for centuries. 13/13 means your self-awareness is dangerously high. You probably already knew the answer before reading the options.';
+  } else if (score >= 10) {
+    emoji = '🔮'; title = 'Highly Self-Aware Human';
+    verdict = `${score}/13 — Your brain is brutally honest with itself, which is rare. Most people score much lower because self-awareness requires confronting inconvenient truths. You seem comfortable with those.`;
+  } else if (score >= 7) {
+    emoji = '🌊'; title = 'Pleasantly Self-Aware';
+    verdict = `${score}/13 — You understand yourself reasonably well, but there are still some lovely blind spots keeping life interesting. That's not a bad thing. Perfect self-awareness would be exhausting.`;
+  } else if (score >= 4) {
+    emoji = '🌙'; title = 'Delightfully Oblivious';
+    verdict = `${score}/13 — You're operating on vibes and instinct, which has its own kind of wisdom honestly. Your brain keeps secrets from you for entertainment purposes. This is fine.`;
+  } else {
+    emoji = '🎭'; title = 'Gloriously Unaware';
+    verdict = `${score}/13 — Either you answered randomly, or your brain has achieved a level of mystery that even Freud couldn't diagnose. Either way, the uncertainty makes you interesting.`;
+  }
+
+  document.getElementById('scoreEmoji').textContent = emoji;
+  document.getElementById('scoreTitle').textContent = title;
+  document.getElementById('scoreVerdict').textContent = verdict;
+  document.getElementById('quizBox').scrollTop = 0;
+}
+
+function restartQuiz() { openQuiz(); }
+
+/* ══ CONTENT + THEMES ══ */
+const D={
+  psych:{en:["<strong>Your brain lies to you — constantly.</strong> Cognitive biases shape every decision without you noticing. Learn to catch them before they catch you.","<strong>Self-sabotage is a trauma response,</strong> not laziness. Understanding the root makes it easier to rewire the pattern and finally break the loop.","<strong>Silence is a psychological weapon.</strong> People comfortable with silence hold far more social power than those who rush to fill it — master the pause.","<strong>Spot the Dark Triad early.</strong> Narcissism, Machiavellianism, and psychopathy appear in everyday people. Know the signs before they drain your energy.","<strong>You become your environment.</strong> Mirror neurons mean your habits, moods, and beliefs are shaped by who you spend time with. Choose your circle wisely."],hi:["<strong>Aapka dimag aapko jhoot bolta hai — baar baar.</strong> Inhe pakadna seekhein isse pehle ki ye aapko pakad lein.","<strong>Self-sabotage ek trauma response hai,</strong> aalsapan nahi. Root cause samajhna pattern todne mein madad karta hai.","<strong>Khamoshi ek psychological weapon hai.</strong> Is pause ko master karein.","<strong>Dark Triad ko jaldi pehchano.</strong> Signs jaanein isse pehle ki ye aapki energy drain karein.","<strong>Aap apna environment ban jaate hain.</strong> Apna circle samajhdaari se chunein."]},
+  self:{en:["<strong>Discipline beats motivation every time.</strong> Motivation fades. Build systems that force action even when you don't feel like it.","<strong>You don't rise to your goals — you fall to your identity.</strong> Change who you believe you are first. The right actions follow automatically.","<strong>1% better every single day</strong> compounds into 37× improvement in one year. Tiny, consistent edges beat big, inconsistent leaps.","<strong>Your brain doesn't multitask — it switches, losing quality each time.</strong> Deep single-tasking is the real superpower of every high performer.","<strong>The first 90 minutes after waking</strong> are when your brain is most receptive. Guard that window — it sets the tone for everything that follows."],hi:["<strong>Discipline hamesha motivation ko haraata hai.</strong> Aisi systems banayein jo tab bhi action force karein jab mann na ho.","<strong>Aap apne goals tak nahi pahunchte — apni identity tak girte hain.</strong> Pehle khud ke baare mein apna belief badlein.","<strong>Roz 1% behtar hona</strong> ek saal mein 37 guna improvement mein compound ho jaata hai.","<strong>Aapka brain multitask nahi karta.</strong> Deep single-tasking hi har high performer ka asli superpower hai.","<strong>Uthne ke baad pehle 90 minutes</strong> mein aapka brain sabse zyada receptive hota hai."]},
+  biz:{en:["<strong>Waiting for perfect conditions is just fear wearing a business plan.</strong> Your first version will be imperfect — ship it anyway.","<strong>Build your audience before your product.</strong> 1,000 true fans who trust you are worth more than 100,000 who don't.","<strong>Revenue solves most problems.</strong> Make your first ₹10,000, then learn to repeat it every single month.","<strong>In the creator economy, you are the moat.</strong> People don't buy products — they buy from people they trust.","<strong>Systems scale. Hustle doesn't.</strong> Build SOPs, delegate, automate — let the machine run itself."],hi:["<strong>Perfect conditions ka intezaar karna sirf darr hai.</strong> Phir bhi launch karein.","<strong>Product se pehle apni audience banayein.</strong> 1,000 sachche fans 100,000 se kahin zyada valuable hain.","<strong>Revenue zyaadatar problems solve karti hai.</strong> Apna pehla ₹10,000 kamayen.","<strong>Creator economy mein, aap hi moat hain.</strong> Aapki reputation aapka sabse scalable asset hai.","<strong>Systems scale karte hain. Hustle nahi.</strong> SOPs banayein, delegate karein, automate karein."]},
+  extra:{en:["<strong>Your network is your real net worth.</strong> The right introduction, the right mentor, the right room — these change trajectories overnight.","<strong>Reading is unfair advantage.</strong> You gain decades of someone's experience in hours. 12 books a year changes everything.","<strong>Failure is just feedback in disguise.</strong> Every stumble carries a precise instruction manual for success.","<strong>Your comfort zone is shrinking your income.</strong> Every skill you avoid has a price. And you're already paying it.","<strong>Time is the only non-renewable resource.</strong> Build with urgency, rest with intention, never confuse busy with productive."],hi:["<strong>Aapka network hi aapki asli net worth hai.</strong> Relationships mein tab invest karein jab zaroorat na ho.","<strong>Padhna ek unfair advantage hai.</strong> Saal mein 12 kitabein padhna sab kuch badal deta hai.","<strong>Failure sirf disguise mein feedback hai.</strong> Har thokar mein success ka instruction manual hota hai.","<strong>Aapka comfort zone aapki income shrink kar raha hai.</strong> Har avoided skill ka ek price hai.","<strong>Time hi aapka ek non-renewable resource hai.</strong> Urgency ke saath build karein."]}
+};
+const CARDS=[{id:'psych',icon:'🧠',title:'Psychology',sub:'Mind · Behavior · Patterns',cls:'cp'},{id:'self',icon:'🔥',title:'Self-Improvement',sub:'Habits · Discipline · Growth',cls:'cs'},{id:'biz',icon:'💼',title:'Business Growth',sub:'Strategy · Money · Scale',cls:'cb'},{id:'extra',icon:'✨',title:'Mindset & Success',sub:'Network · Reading · Time',cls:'cn'}];
 const ST={psych:'en',self:'en',biz:'en',extra:'en'};
 
 function renderPoints(id,lang){
-  const ul=document.getElementById(id);if(!ul)return;
-  ul.innerHTML='';
-  D[id][lang].forEach((t,i)=>{
-    const li=document.createElement('li');li.className='pitem';
-    li.style.animationDelay=(i*.055)+'s';
-    li.innerHTML=`<div class="pdot"></div><p class="ptxt">${t}</p>`;
-    ul.appendChild(li);
-  });
+  const ul=document.getElementById(id);if(!ul)return;ul.innerHTML='';
+  D[id][lang].forEach((t,i)=>{const li=document.createElement('li');li.className='pitem';li.style.animationDelay=(i*.055)+'s';li.innerHTML=`<div class="pdot"></div><p class="ptxt">${t}</p>`;ul.appendChild(li);});
 }
-function toggleLang(el,id){
-  const nl=ST[id]==='en'?'hi':'en';ST[id]=nl;
-  el.querySelectorAll('.lbtn').forEach(b=>b.classList.toggle('on',b.dataset.l===nl));
-  renderPoints(id,nl);
-}
-function toggleAccordion(card){
-  const o=card.classList.contains('open');
-  document.querySelectorAll('.content-area .card').forEach(c=>c.classList.remove('open'));
-  if(!o)card.classList.add('open');
-}
+function toggleLang(el,id){const nl=ST[id]==='en'?'hi':'en';ST[id]=nl;el.querySelectorAll('.lbtn').forEach(b=>b.classList.toggle('on',b.dataset.l===nl));renderPoints(id,nl);}
+function toggleAccordion(card){const o=card.classList.contains('open');document.querySelectorAll('.content-area .card').forEach(c=>c.classList.remove('open'));if(!o)card.classList.add('open');}
 function renderCards(theme){
-  const area=document.getElementById('contentArea');
-  area.innerHTML='';
+  const area=document.getElementById('contentArea');area.innerHTML='';
   CARDS.forEach(c=>{
     const div=document.createElement('div');div.className=`card ${c.cls}`;
     const isN=theme==='noir';
-    div.innerHTML=`
-      <div class="cheader" ${isN?'onclick="toggleAccordion(this.parentElement)"':''}>
-        <div class="ctg"><span class="cicon">${c.icon}</span>
-          <div><div class="ctitle">${c.title}</div><div class="csub">${c.sub}</div></div></div>
-        <div class="ltoggle" onclick="event.stopPropagation();toggleLang(this,'${c.id}')">
-          <div class="lbtn on" data-l="en">EN</div><div class="lbtn" data-l="hi">HI</div></div>
-      </div>
-      <ul class="plist" id="${c.id}"></ul>`;
+    div.innerHTML=`<div class="cheader" ${isN?'onclick="toggleAccordion(this.parentElement)"':''}><div class="ctg"><span class="cicon">${c.icon}</span><div><div class="ctitle">${c.title}</div><div class="csub">${c.sub}</div></div></div><div class="ltoggle" onclick="event.stopPropagation();toggleLang(this,'${c.id}')"><div class="lbtn on" data-l="en">EN</div><div class="lbtn" data-l="hi">HI</div></div></div><ul class="plist" id="${c.id}"></ul>`;
     area.appendChild(div);renderPoints(c.id,ST[c.id]);
   });
   const dots=document.getElementById('scrollDots');
   if(theme==='cream'){
     dots.innerHTML='';
-    CARDS.forEach((_,i)=>{
-      const d=document.createElement('div');d.className='sdot'+(i===0?' on':'');
-      d.onclick=()=>{const cs=area.querySelectorAll('.card');if(cs[i])cs[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});};
-      dots.appendChild(d);
-    });
-    area.onscroll=()=>{
-      const cs=area.querySelectorAll('.card');
-      const idx=Math.round(area.scrollLeft/((cs[0]?.offsetWidth||1)+12));
-      document.querySelectorAll('.sdot').forEach((d,i)=>d.classList.toggle('on',i===idx));
-    };
+    CARDS.forEach((_,i)=>{const d=document.createElement('div');d.className='sdot'+(i===0?' on':'');d.onclick=()=>{const cs=area.querySelectorAll('.card');if(cs[i])cs[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});};dots.appendChild(d);});
+    area.onscroll=()=>{const cs=area.querySelectorAll('.card');const idx=Math.round(area.scrollLeft/((cs[0]?.offsetWidth||1)+12));document.querySelectorAll('.sdot').forEach((d,i)=>d.classList.toggle('on',i===idx));};
   } else {dots.innerHTML='';area.onscroll=null;}
   if(theme==='noir')setTimeout(()=>{const f=area.querySelector('.card');if(f)f.classList.add('open');},80);
 }
@@ -700,146 +1029,6 @@ function setTheme(t){
   renderCards(t);localStorage.setItem('yk_theme',t);
 }
 
-/* ═══════════════════════════════════════════════
-   INTERSTELLAR-STYLE SOUND — Web Audio
-   Hans Zimmer inspired: deep pipe organ drone +
-   slow swelling strings + ethereal pad + bass pulse
-═══════════════════════════════════════════════ */
-let AC=null, masterGain=null, playing=false;
-const musicBtn=document.getElementById('musicBtn');
-
-function buildAudio(){
-  if(AC) return;
-  AC = new (window.AudioContext||window.webkitAudioContext)();
-  masterGain = AC.createGain();
-  masterGain.gain.value = 0;
-  masterGain.connect(AC.destination);
-
-  /* ── REVERB (large hall impulse) ── */
-  function makeReverb(duration=4, decay=2.5){
-    const sr=AC.sampleRate, len=sr*duration;
-    const buf=AC.createBuffer(2,len,sr);
-    for(let ch=0;ch<2;ch++){
-      const d=buf.getChannelData(ch);
-      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay);
-    }
-    const cv=AC.createConvolver(); cv.buffer=buf; return cv;
-  }
-  const reverb = makeReverb(5, 2.2);
-  const reverbGain = AC.createGain(); reverbGain.gain.value=0.55;
-  reverb.connect(reverbGain); reverbGain.connect(masterGain);
-
-  function mkOsc(type,freq,gain){
-    const o=AC.createOscillator(), g=AC.createGain();
-    o.type=type; o.frequency.value=freq; g.gain.value=gain;
-    o.connect(g); g.connect(reverb); g.connect(masterGain);
-    o.start(); return {o,g};
-  }
-
-  /* ── DEEP PIPE ORGAN DRONES (Db major / F minor — Interstellar key) ── */
-  // Db: 138.59, Ab: 207.65, F: 174.61, Eb: 155.56
-  mkOsc('sine',     34.65, 0.14);   // Cb bass pedal (very deep)
-  mkOsc('sine',     69.3,  0.18);   // Cb octave
-  mkOsc('triangle', 138.59,0.10);   // Db
-  mkOsc('sine',     174.61,0.07);   // F
-  mkOsc('sine',     207.65,0.055);  // Ab
-  mkOsc('sine',     277.18,0.04);   // Db+oct
-
-  /* ── SLOW SWELLING STRINGS (LFO modulated) ── */
-  const strFreqs=[261.63,311.13,369.99,440,523.25];
-  strFreqs.forEach((f,i)=>{
-    const o=AC.createOscillator(), g=AC.createGain();
-    const lfo=AC.createOscillator(), lfog=AC.createGain();
-    o.type='sawtooth'; o.frequency.value=f;
-    // LP filter for soft strings
-    const flt=AC.createBiquadFilter(); flt.type='lowpass'; flt.frequency.value=900; flt.Q.value=0.5;
-    lfo.type='sine'; lfo.frequency.value=0.04+i*0.008;
-    lfog.gain.value=0.025+i*0.003;
-    lfo.connect(lfog); lfog.connect(g.gain);
-    g.gain.value=0.022+i*0.003;
-    o.connect(flt); flt.connect(g); g.connect(reverb);
-    o.start(); lfo.start();
-  });
-
-  /* ── HEARTBEAT BASS PULSE (iconic Interstellar element) ── */
-  function heartbeat(){
-    const now=AC.currentTime;
-    function beat(t, vel){
-      const o=AC.createOscillator(), g=AC.createGain();
-      const flt=AC.createBiquadFilter();
-      o.type='sine'; o.frequency.value=55;
-      flt.type='lowpass'; flt.frequency.value=180; flt.Q.value=1.2;
-      g.gain.setValueAtTime(0,t);
-      g.gain.linearRampToValueAtTime(vel,t+0.02);
-      g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
-      o.connect(flt); flt.connect(g); g.connect(masterGain);
-      o.start(t); o.stop(t+0.4);
-    }
-    const interval=3.4; // slow heartbeat ~17bpm
-    beat(now+0.1,   0.18);
-    beat(now+0.38,  0.11);
-    beat(now+interval+0.1,  0.18);
-    beat(now+interval+0.38, 0.11);
-    setTimeout(heartbeat, interval*2*1000 - 150);
-  }
-
-  /* ── ETHEREAL HIGH PAD (shimmer, like organ overtones) ── */
-  const etherealFreqs=[523.25,659.25,783.99,1046.5];
-  etherealFreqs.forEach((f,i)=>{
-    const o=AC.createOscillator(), g=AC.createGain();
-    const lfo=AC.createOscillator(), lfog=AC.createGain();
-    o.type='sine'; o.frequency.value=f;
-    lfo.type='sine'; lfo.frequency.value=0.02+i*0.005;
-    lfog.gain.value=0.006;
-    lfo.connect(lfog); lfog.connect(g.gain);
-    g.gain.value=0.012-i*0.002;
-    o.connect(g); g.connect(reverb);
-    o.start(); lfo.start();
-  });
-
-  /* ── SLOW VOLUME SWELL LFO (breathing effect) ── */
-  const swellLFO=AC.createOscillator();
-  const swellGain=AC.createGain();
-  swellLFO.type='sine'; swellLFO.frequency.value=0.018; // ~55s period
-  swellGain.gain.value=0.08;
-  swellLFO.connect(swellGain); swellGain.connect(masterGain.gain);
-  swellLFO.start();
-
-  /* Store heartbeat starter */
-  AC._startHeartbeat = () => { if(playing) heartbeat(); };
-}
-
-function toggleMusic(){
-  buildAudio();
-  if(AC.state==='suspended') AC.resume();
-  playing=!playing;
-  const now=AC.currentTime;
-  if(playing){
-    masterGain.gain.cancelScheduledValues(now);
-    masterGain.gain.setValueAtTime(0,now);
-    masterGain.gain.linearRampToValueAtTime(0.32, now+3.5); // slow fade in like the movie
-    musicBtn.classList.add('playing');
-    AC._startHeartbeat();
-  } else {
-    masterGain.gain.cancelScheduledValues(now);
-    masterGain.gain.setValueAtTime(masterGain.gain.value,now);
-    masterGain.gain.linearRampToValueAtTime(0,now+2.5);
-    musicBtn.classList.remove('playing');
-  }
-}
-
-/* Auto start on first interaction */
-let started=false;
-function autoStart(){
-  if(started)return; started=true;
-  document.removeEventListener('click',autoStart);
-  document.removeEventListener('touchstart',autoStart);
-  toggleMusic();
-}
-document.addEventListener('click',autoStart,{passive:true});
-document.addEventListener('touchstart',autoStart,{passive:true});
-
-/* Init */
 const saved=localStorage.getItem('yk_theme')||'dark';
 setTheme(saved);
 </script>
