@@ -36,14 +36,16 @@ body{min-height:100vh;overflow-x:hidden;transition:background .7s,color .4s}
 .t-panel{
   position:fixed;right:0;top:50%;transform:translateY(-50%);
   z-index:998;display:flex;flex-direction:column;align-items:center;gap:8px;
-  background:rgba(8,8,20,.55);backdrop-filter:blur(20px);
+  background:rgba(6,4,18,.55);backdrop-filter:blur(32px) saturate(200%);
+  -webkit-backdrop-filter:blur(32px) saturate(200%);
   border-radius:24px 0 0 24px;padding:12px 8px;
-  border:1px solid rgba(255,255,255,.08);border-right:none;
+  border:1px solid rgba(255,255,255,.12);border-right:none;
+  box-shadow:inset 1px 0 0 rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.06);
 }
 .tsw{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 .tsw.on{border-color:#fff;transform:scale(1.22);box-shadow:0 0 12px rgba(255,255,255,.45)}
 .tsw:hover:not(.on){transform:scale(1.1)}
-.sw1{background:conic-gradient(#f0a500,#4cc9f0,#a855f7)}
+.sw1{background:linear-gradient(135deg,#a855f7 0%,#4cc9f0 50%,#f0a500 100%)}
 .sw2{background:linear-gradient(135deg,#c9a96e,#f5e6c8)}
 .sw3{background:linear-gradient(135deg,#00d2ff,#0077a8)}
 .sw4{background:linear-gradient(135deg,#f72585,#7209b7)}
@@ -69,53 +71,25 @@ body{min-height:100vh;overflow-x:hidden;transition:background .7s,color .4s}
   width:100%;max-width:500px;
   max-height:92vh;overflow-y:auto;scrollbar-width:none;
   border-radius:28px;
-  background:rgba(8,6,20,.92);
-  border:1px solid rgba(255,255,255,.06);
-  padding:36px 28px 28px;
+  background:rgba(8,4,20,.72);
+  backdrop-filter:blur(60px) saturate(220%) brightness(1.08);
+  -webkit-backdrop-filter:blur(60px) saturate(220%) brightness(1.08);
+  border:1px solid rgba(255,255,255,.18);
+  padding:48px 28px 28px;
   animation:boxIn .4s cubic-bezier(.34,1.56,.64,1);
-  /* Glowing moving border */
   box-shadow:
-    0 0 0 1.5px rgba(168,85,247,.0),
-    0 24px 80px rgba(0,0,0,.7),
-    inset 0 1px 0 rgba(255,255,255,.08);
+    0 32px 90px rgba(0,0,0,.85),
+    0 0 0 1px rgba(168,85,247,.2),
+    0 0 80px rgba(168,85,247,.08),
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 -1px 0 rgba(255,255,255,.06),
+    inset 1px 0 0 rgba(255,255,255,.09),
+    inset -1px 0 0 rgba(255,255,255,.09);
 }
 .quiz-box::-webkit-scrollbar{display:none}
 @keyframes boxIn{from{opacity:0;transform:scale(.88) translateY(30px)}to{opacity:1;transform:none}}
 
-/* Moving glow border via pseudo-element */
-.quiz-box::before{
-  content:'';
-  position:absolute;inset:-1.5px;border-radius:29px;z-index:-1;
-  background:conic-gradient(
-    from var(--angle,0deg),
-    #a855f7 0%,
-    #4cc9f0 20%,
-    #f72585 40%,
-    #ffd166 60%,
-    #06d6a0 80%,
-    #a855f7 100%
-  );
-  animation:rotateBorder 3s linear infinite;
-  filter:blur(1px);
-}
-.quiz-box::after{
-  content:'';
-  position:absolute;inset:-1.5px;border-radius:29px;z-index:-1;
-  background:conic-gradient(
-    from var(--angle,0deg),
-    #a855f7 0%,
-    #4cc9f0 20%,
-    #f72585 40%,
-    #ffd166 60%,
-    #06d6a0 80%,
-    #a855f7 100%
-  );
-  animation:rotateBorder 3s linear infinite;
-  filter:blur(14px);
-  opacity:.45;
-}
-@property --angle{syntax:'<angle>';inherits:false;initial-value:0deg}
-@keyframes rotateBorder{to{--angle:360deg}}
+
 
 /* Quiz close btn */
 .quiz-close{
@@ -489,6 +463,7 @@ body.t-royal .scroll-dots{display:none}
 <div class="quiz-overlay" id="quizOverlay" onclick="overlayClick(event)">
   <div class="quiz-box" id="quizBox">
     <button class="quiz-close" onclick="closeQuiz()" aria-label="Close">✕</button>
+    <button id="langToggleBtn" onclick="toggleQuizLang()" style="position:absolute;top:12px;left:14px;background:rgba(168,85,247,.18);border:1px solid rgba(168,85,247,.38);border-radius:50px;padding:5px 13px;cursor:pointer;font-size:.68rem;font-weight:600;color:rgba(255,255,255,.85);letter-spacing:.3px;transition:all .2s;">🇮🇳 Hinglish</button>
 
     <!-- Question View -->
     <div id="quizView">
@@ -510,7 +485,7 @@ body.t-royal .scroll-dots{display:none}
       <div class="score-num" id="scoreNum">0/13</div>
       <div class="score-label">Correct Answers</div>
       <div class="score-verdict" id="scoreVerdict"></div>
-      <button class="score-restart" onclick="restartQuiz()">🔄 Try Again</button>
+      <button class="score-restart" id="restartBtn" onclick="restartQuiz()">🔄 Try Again</button>
     </div>
   </div>
 </div>
@@ -710,282 +685,303 @@ anim();
    QUIZ DATA — 13 Psychological Questions
    with Sense of Humour
 ══════════════════════════════════════ */
-const QUESTIONS = [
-  {
-    q: "You're in a meeting that could have been an email. Your brain does what?",
-    hint: "(Be honest. We already know.)",
-    opts: [
-      "Plans your entire life for the next 40 years",
-      "Nods professionally while mentally decorating your dream apartment",
-      "Counts ceiling tiles and names them",
-      "Actually pays attention. You're suspiciously productive."
-    ],
-    correct: 1,
-    feedback: "✅ Spot on! The brain defaults to mind-wandering when under-stimulated. Called Default Mode Network activation — you're not lazy, you're neurologically normal. Mostly."
-  },
-  {
-    q: "Someone cancels plans you were secretly dreading. Your real emotion is:",
-    hint: "(Psychology calls this 'relief disguised as disappointment')",
-    opts: [
-      "Genuine disappointment — you love socialising",
-      "Pure relief so overwhelming you do a little dance alone",
-      "Guilt for feeling relieved, then relief about feeling guilty",
-      "You immediately reschedule because you enjoy suffering"
-    ],
-    correct: 1,
-    feedback: "✅ Correct! This is called 'anticipatory anxiety relief' — the brain releases dopamine when an expected threat disappears. Your inner introvert just won."
-  },
-  {
-    q: "What do you actually do when someone says 'be honest'?",
-    hint: "(Social psychology says you already know this one)",
-    opts: [
-      "Tell the complete truth, consequences be damned",
-      "Tell a carefully filtered version of the truth that still makes you look good",
-      "Say 'I don't know' and let them figure it out",
-      "Immediately become very interested in your phone"
-    ],
-    correct: 1,
-    feedback: "✅ Nailed it! This is called impression management — a fundamental human social behaviour. Honesty filtered through self-preservation. Very relatable. Very human."
-  },
-  {
-    q: "It's 2 AM. Rational you went to sleep hours ago. Who is this creature still scrolling?",
-    hint: "(This has an actual scientific name, by the way)",
-    opts: [
-      "Your future self making terrible decisions for current you",
-      "Your inner goblin who thrives in chaos",
-      "Revenge bedtime procrastination — your brain protesting a busy day",
-      "A ghost. You don't even remember falling asleep."
-    ],
-    correct: 2,
-    feedback: "✅ Yes! 'Revenge Bedtime Procrastination' is a real term — staying up late to reclaim personal time you didn't have during the day. Your brain is literally protesting being busy. Respect."
-  },
-  {
-    q: "Someone criticises your work. Inside your head, what actually happens first?",
-    hint: "(In milliseconds, before the 'mature response' kicks in)",
-    opts: [
-      "Immediate calm acceptance — you love constructive feedback",
-      "A brief internal meltdown, then composure, then pretending it was fine",
-      "You mentally write a 3-page rebuttal you'll never send",
-      "You agree loudly while never changing anything"
-    ],
-    correct: 1,
-    feedback: "✅ That's it! This is the amygdala hijack — your emotional brain reacts before your logical brain even registers the words. The meltdown happens in milliseconds. The composure takes effort. You're not sensitive, you're human."
-  },
-  {
-    q: "You open a 20-tab browser and then immediately forget why. This is called:",
-    hint: "(There is actually a name for this phenomenon)",
-    opts: [
-      "Multi-tasking genius mode",
-      "The Doorway Effect — location change causes memory glitch",
-      "Spontaneous dementia (temporary, hopefully)",
-      "Your laptop is also confused and you two are in sync"
-    ],
-    correct: 1,
-    feedback: "✅ The Doorway Effect is real! Psychologist Gabriel Radvansky found that walking through doorways (or switching contexts) causes the brain to file away active memories. You forgot because your brain thought you moved on. Not your fault."
-  },
-  {
-    q: "You deeply relate to a movie villain. This probably means:",
-    hint: "(Don't panic. The answer might surprise you.)",
-    opts: [
-      "You have concerning personality traits that need immediate attention",
-      "You're suppressing something they represent — power, freedom, being fed up",
-      "You have excellent taste in cinematography",
-      "The hero was just badly written and you noticed"
-    ],
-    correct: 1,
-    feedback: "✅ Correct! Psychologists call this 'shadow projection' — relating to villains often signals suppressed desires for autonomy, recognition, or rebellion. Your psyche is asking you to examine what you're not allowing yourself to want."
-  },
-  {
-    q: "You see a 'Do Not Touch' sign. Your first instinct is:",
-    hint: "(Your answer reveals something about your personality)",
-    opts: [
-      "Obey it immediately without a second thought",
-      "Not touch it, but spend 30 seconds thinking about touching it",
-      "Touch it. Obviously. Why is there even a sign.",
-      "Wonder who put the sign there and their whole deal"
-    ],
-    correct: 2,
-    feedback: "✅ If you thought 'touch it' — that's Psychological Reactance! Humans instinctively resist perceived threats to their freedom. The sign doesn't just warn, it also dares. Your brain just responded to a dare."
-  },
-  {
-    q: "A stranger is rude to you. You replay the interaction for:",
-    hint: "(Negativity Bias is a real thing and you've definitely experienced it)",
-    opts: [
-      "Exactly 0 seconds. You immediately let it go like a zen monk.",
-      "5 minutes, then it's gone",
-      "3 days. You've mentally confronted them 47 times with devastating comebacks.",
-      "You can't remember — too busy replaying something from 2014"
-    ],
-    correct: 2,
-    feedback: "✅ Welcome to Negativity Bias! The brain processes negative events 5x more intensely than positive ones — it's a survival mechanism. You're not dramatic, you're evolved. Those 47 comebacks were just your amygdala doing cardio."
-  },
-  {
-    q: "You finally finish a huge task. Your brain immediately does what?",
-    hint: "(This one will make you feel very called out)",
-    opts: [
-      "Celebrates appropriately and feels satisfied",
-      "Starts worrying about the next thing before the feeling even lands",
-      "Forgets you finished and starts the task again",
-      "Rewards you with 4 hours of guilt-free rest. (lol no)"
-    ],
-    correct: 1,
-    feedback: "✅ Yes! This is called Hedonic Adaptation + Anxiety Substitution. The brain is designed to always find the next 'problem'. Satisfaction is brief by design — it's what kept your ancestors surviving. Unfortunately."
-  },
-  {
-    q: "Someone says 'we need to talk.' Your body's immediate reaction is:",
-    hint: "(Before you even know what it's about)",
-    opts: [
-      "Calm curiosity — could be anything, no reason to panic",
-      "Heart stops, brain runs 300 catastrophic scenarios in 1.2 seconds",
-      "You immediately start confessing things they didn't even know about",
-      "You go completely still and hope they forget"
-    ],
-    correct: 1,
-    feedback: "✅ That's your fight-or-flight response triggered by an ambiguous social threat. The brain treats uncertainty like danger. 'We need to talk' is four words that activate your entire threat-detection system simultaneously."
-  },
-  {
-    q: "You laugh at something dark or awkward when you shouldn't. This means you are:",
-    hint: "(This is actually a well-studied psychological response)",
-    opts: [
-      "A horrible person with poor social calibration",
-      "Experiencing nervous laughter — the brain's stress valve releasing pressure",
-      "Very chaotic neutral energy and proud of it",
-      "Probably just hungry. Low blood sugar does weird things."
-    ],
-    correct: 1,
-    feedback: "✅ Nervous laughter is a genuine neurological response — when the brain is overwhelmed by conflicting signals (threat + social inappropriateness), laughter becomes a release valve. You're not horrible, you're just poorly timed."
-  },
-  {
-    q: "You finally share your dream with someone. They're silent for two seconds. You instantly think:",
-    hint: "(The final boss of the quiz. This one hits different.)",
-    opts: [
-      "They're thoughtfully processing what you said",
-      "They hate it and are searching for a polite way to destroy it",
-      "Technically they could be thinking anything but you've already concluded the worst",
-      "Both B and C simultaneously, at the same time, forever"
-    ],
-    correct: 3,
-    feedback: "✅ This is Mind Reading Bias — we assume silence = rejection. Paired with catastrophising, it's the fastest way to talk yourself out of your own dreams before anyone else even gets a chance to. The two seconds of silence? They were just thinking."
-  }
+
+/* ══ QUIZ LANGUAGE ══ */
+let quizLang = 'en';
+function toggleQuizLang() {
+  quizLang = quizLang === 'en' ? 'hi' : 'en';
+  const lb = document.getElementById('langToggleBtn');
+  if(lb) lb.textContent = quizLang === 'en' ? '🇮🇳 Hinglish' : '🇬🇧 English';
+  if(!answered) renderQ();
+}
+
+/* ══ SOUNDS ══ */
+let SFX = null;
+function getAC(){ if(!SFX){SFX=new(window.AudioContext||window.webkitAudioContext)();} if(SFX.state==='suspended')SFX.resume(); return SFX; }
+function playCorrect(){
+  try{ const ac=getAC();
+    [[523.25,0],[659.25,.08],[783.99,.16]].forEach(([f,t])=>{
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='sine';o.frequency.value=f;
+      const n=ac.currentTime+t;
+      g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(.22,n+.02);g.gain.exponentialRampToValueAtTime(.001,n+.5);
+      o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+.55);
+    });
+    const o2=ac.createOscillator(),g2=ac.createGain();
+    o2.type='triangle';o2.frequency.value=1046.5;
+    const t2=ac.currentTime+.22;
+    g2.gain.setValueAtTime(0,t2);g2.gain.linearRampToValueAtTime(.1,t2+.01);g2.gain.exponentialRampToValueAtTime(.001,t2+.4);
+    o2.connect(g2);g2.connect(ac.destination);o2.start(t2);o2.stop(t2+.45);
+  }catch(e){}
+}
+function playWrong(){
+  try{ const ac=getAC();
+    [[329.63,0],[261.63,.18]].forEach(([f,t])=>{
+      const o=ac.createOscillator(),g=ac.createGain(),flt=ac.createBiquadFilter();
+      o.type='sawtooth';flt.type='lowpass';flt.frequency.value=800;
+      const n=ac.currentTime+t;
+      o.frequency.setValueAtTime(f,n);o.frequency.linearRampToValueAtTime(f*.92,n+.28);
+      g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(.15,n+.02);g.gain.exponentialRampToValueAtTime(.001,n+.45);
+      o.connect(flt);flt.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+.5);
+    });
+  }catch(e){}
+}
+function playClick(){
+  try{ const ac=getAC(),o=ac.createOscillator(),g=ac.createGain();
+    o.type='sine';o.frequency.value=440;const n=ac.currentTime;
+    g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(.07,n+.005);g.gain.exponentialRampToValueAtTime(.001,n+.08);
+    o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+.1);
+  }catch(e){}
+}
+function playComplete(){
+  try{ const ac=getAC();
+    [[261.63,0,.35],[329.63,.1,.3],[392,.2,.3],[523.25,.32,.5],[659.25,.44,.6]].forEach(([f,t,d])=>{
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='triangle';o.frequency.value=f;const n=ac.currentTime+t;
+      g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(.18,n+.03);g.gain.exponentialRampToValueAtTime(.001,n+d);
+      o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+d+.05);
+    });
+  }catch(e){}
+}
+
+/* ══ QUIZ DATA — 13 Questions (EN + Hinglish) ══ */
+const QUESTIONS=[
+  {correct:2,
+   en:{q:"You can win ₹1,500 for sure — OR take a 60% chance to win ₹3,000 (and 40% chance to win nothing). Which do you choose?",
+       hint:"(Mathematically, both options have the same expected value. So what decides?)",
+       opts:["Take the guaranteed ₹1,500 — certain wins always beat gambling","Calculate nothing — just go with what feels safer","Calculate the expected value of both, then choose based on your actual risk tolerance","Wait for a better offer before deciding"],
+       feedback:"✅ Calculate, then choose based on your risk tolerance. Expected value of the gamble is ₹1,800 (60%×₹3,000) — mathematically superior. But this is Loss Aversion in action: humans feel losses 2× more painfully than equivalent gains. Neither choice is wrong — but the choice should come from analysis, not fear. Knowing your real risk tolerance is a superpower."},
+   hi:{q:"₹1,500 pakka jeetoge — YA 60% chance hai ₹3,000 jeetne ka (aur 40% chance kuch nahi). Kya choose karoge?",
+       hint:"(Mathematically, dono options ki expected value same hai. Toh phir kya decide karta hai?)",
+       opts:["Pakka ₹1,500 lo — certain win hamesha gambling se better hai","Kuch calculate mat karo — jo safe lage woh karo","Dono ki expected value calculate karo, phir apni actual risk tolerance se choose karo","Koi better offer aane tak wait karo"],
+       feedback:"✅ Calculate karo, phir apni risk tolerance se choose karo. Gamble ki expected value ₹1,800 hai (60%×₹3,000) — mathematically superior. Lekin yeh Loss Aversion hai: humans losses ko gains se 2× zyada painful feel karte hain. Koi bhi choice galat nahi — lekin choice darr se nahi, analysis se aani chahiye. Apni real risk tolerance jaanna ek superpower hai."}},
+
+  {correct:1,
+   en:{q:"A salesman says: 'This laptop was ₹80,000, now only ₹52,000 — you save ₹28,000!' You didn't plan to buy it. What do you do?",
+       hint:"(The first number mentioned has already done something to your brain)",
+       opts:["Buy it — saving ₹28,000 is a real win","Ask yourself: would I pay ₹52,000 for this if I had never heard the ₹80,000 figure?","Negotiate further since they clearly have room","Buy only if someone else also thinks it's a good deal"],
+       feedback:"✅ Remove the anchor. This is the Anchoring Bias — the first number you hear becomes the reference point for all judgments. ₹80,000 was probably never the real price. You're not 'saving' ₹28,000 — you're spending ₹52,000. Always ask: 'What would I pay for this completely independently of any first number I heard?'"},
+   hi:{q:"Ek salesman kehta hai: 'Yeh laptop ₹80,000 ka tha, ab sirf ₹52,000 — ₹28,000 bachoge!' Tumne plan nahi kiya tha khareedne ka. Kya karoge?",
+       hint:"(Pehla number sun ke tumhare brain mein kuch already ho gaya hai)",
+       opts:["Kharid lo — ₹28,000 bachana real win hai","Khud se puchho: kya main ₹52,000 deta agar ₹80,000 wala figure kabhi suna hi nahi hota?","Aur negotiate karo kyunki inke paas clearly room hai","Sirf tab lo jab koi aur bhi kahe ki deal achhi hai"],
+       feedback:"✅ Anchor hatao. Yeh Anchoring Bias hai — pehla number sunne se woh reference point ban jaata hai. ₹80,000 shayad kabhi real price tha hi nahi. Tum ₹28,000 'bachaa' nahi rahe — ₹52,000 kharch kar rahe ho. Hamesha puchho: 'Kya main yeh independently khareedta, bina koi pehla number sune?'"}},
+
+  {correct:3,
+   en:{q:"You've researched a decision for weeks and found mostly evidence supporting option A. You feel very confident. What's the real risk here?",
+       hint:"(The problem isn't the research — it's what the research was unconsciously doing)",
+       opts:["No risk — thorough research always leads to better decisions","You may have spent too much time and now feel pressure to choose","Option A might not actually be the best option in the market","You likely searched for information that confirms A and ignored evidence against it — Confirmation Bias"],
+       feedback:"✅ Confirmation Bias is the trap. When we have an early preference, the brain becomes a lawyer arguing for that side — finding evidence that confirms it, dismissing what challenges it. The antidote: actively 'steel man' the opposing option. Ask 'What's the strongest possible case for NOT choosing A?' If you can't answer that well, your research was biased, not thorough."},
+   hi:{q:"Weeks tak research ki, zyaadatar option A ke supporting evidence mile. Bahut confident feel ho raha hai. Yahan asli risk kya hai?",
+       hint:"(Problem research nahi hai — yeh hai ki research unconsciously kya kar rahi thi)",
+       opts:["Koi risk nahi — thorough research hamesha better decision deti hai","Zyada time laga diya aur ab pressure feel ho raha hai choose karne ka","Option A market mein actually best nahi bhi ho sakta","Tumne probably A confirm karne wala evidence dhundha aur against wala ignore kiya — Confirmation Bias"],
+       feedback:"✅ Confirmation Bias ka trap hai. Jab pehle se ek preference hoti hai, brain ek lawyer ban jaata hai usi side ke liye — confirming evidence dhundta hai, challenging evidence dismiss karta hai. Antidote: actively 'steel man' karo opposing option ko. Puchho: 'A ko na choose karne ka sabse strong case kya hai?' Agar yeh achhe se answer nahi kar sakte, research thorough nahi — biased thi."}},
+
+  {correct:2,
+   en:{q:"You've worked on a project for 8 months. New data shows it will almost certainly fail. What do you do?",
+       hint:"(This is one of the most dangerous cognitive traps in existence)",
+       opts:["Push harder — 8 months of effort cannot be wasted","Modify slightly and hope it improves","Stop now: the 8 months are already gone whether you stop or not. Only the future matters.","Ask others first before deciding — it feels too personal to judge alone"],
+       feedback:"✅ Stop it now. This is the Sunk Cost Fallacy. The 8 months are gone forever — they don't change regardless of what you do next. Continuing only to 'not waste' past effort is irrational because past effort cannot be recovered. The only relevant question is: 'Does future investment justify future return?' If no, stopping is the intelligent move, not the failure."},
+   hi:{q:"8 mahine se project pe ho. Naya data dikhata hai ki yeh almost certainly fail hoga. Kya karoge?",
+       hint:"(Yeh duniya ke sabse dangerous cognitive traps mein se ek hai)",
+       opts:["Aur mehnat karo — 8 mahine waste nahi ho sakte","Thoda modify karo aur hope rakho","Abhi band karo: 8 mahine waise bhi gaye chahe ruko ya nahi. Sirf future matter karta hai.","Pehle doosron se puchho — akele judge karna bahut personal lagta hai"],
+       feedback:"✅ Abhi band karo. Yeh Sunk Cost Fallacy hai. 8 mahine hamesha ke liye gaye — yeh nahi badlega chahe aage kuch bhi karo. Sirf 'past effort waste na ho' ke liye continue karna irrational hai kyunki past effort wapas nahi aata. Asli sawaal sirf yeh hai: 'Kya future investment future return justify karta hai?' Agar nahi, band karna intelligent move hai, failure nahi."}},
+
+  {correct:1,
+   en:{q:"You're framing a business proposal. Which version will psychologically persuade a client MORE?",
+       hint:"(The information is identical. But the brain doesn't process them equally.)",
+       opts:["'Our solution has a 30% failure rate, but when it works, ROI is exceptional'","'Our solution has a 70% success rate with exceptional ROI for those who implement it fully'","Both framings are equal — rational clients evaluate only the numbers","Lead with the failure rate to seem honest and build trust"],
+       feedback:"✅ The positive frame wins every time. This is the Framing Effect — identical information presented differently produces radically different emotional responses. A '70% survival rate' feels completely different from a '30% mortality rate' even though they're the same fact. Great communicators don't lie — they present true information through the frame that activates motivation, not fear. Framing is not manipulation; it's understanding human psychology."},
+   hi:{q:"Ek business proposal frame kar rahe ho. Kaunsa version client ko psychologically zyada persuade karega?",
+       hint:"(Information same hai. Lekin brain inhe equally process nahi karta.)",
+       opts:["'Hamare solution mein 30% failure rate hai, lekin jab kaam karta hai toh ROI exceptional hota hai'","'Hamare solution mein 70% success rate hai aur jo fully implement karte hain unhe exceptional ROI milta hai'","Dono framings equal hain — rational clients sirf numbers evaluate karte hain","Failure rate se shuru karo honest laagne ke liye aur trust banane ke liye"],
+       feedback:"✅ Positive frame hamesha jeetta hai. Yeh Framing Effect hai — same information alag tarah present karne se radically different emotional responses milte hain. '70% survival rate' aur '30% mortality rate' same fact hain lekin bilkul alag feel karte hain. Achhe communicators jhooth nahi bolte — sach ko us frame se present karte hain jo motivation activate kare, darr nahi. Framing manipulation nahi — human psychology samajhna hai."}},
+
+  {correct:0,
+   en:{q:"You need to make a decision but feel emotionally flooded — angry, anxious, or hurt. What's the single most important thing to do FIRST?",
+       hint:"(Your decision-making hardware is temporarily offline. You need to reboot it first.)",
+       opts:["Pause completely and wait until your emotional state has settled — then decide","Decide immediately before you overthink it and lose confidence","Talk to someone to process the emotion out loud","Write down the pros and cons to engage your logical brain"],
+       feedback:"✅ Wait until you're calm. This is the Hot-Cold Empathy Gap — when emotionally aroused, we radically underestimate how differently we'll think when calm. Decisions made in emotional heat prioritise immediate relief over long-term consequences. The minimum viable pause: 24 hours for big decisions, 30 minutes for medium ones. Your IQ doesn't drop — your decision quality does. Time is the antidote."},
+   hi:{q:"Decision lena hai lekin emotionally flooded feel ho raha hai — gussa, anxiety, ya hurt. PEHLE ek sabse important kaam kya hai?",
+       hint:"(Tumhara decision-making hardware temporarily offline hai. Pehle reboot karna hoga.)",
+       opts:["Bilkul pause karo aur tab tak wait karo jab tak emotional state settle ho — tab decide karo","Turant decide karo isse pehle ki overthink karo aur confidence lose ho","Kisi se baat karo emotion process karne ke liye","Pros aur cons likhna shuru karo logical brain engage karne ke liye"],
+       feedback:"✅ Calm hone tak wait karo. Yeh Hot-Cold Empathy Gap hai — emotionally aroused hone par hum yeh radically underestimate karte hain ki calm hone par kitna alag sochenge. Emotional heat mein liye decisions long-term consequences se zyada immediate relief prioritise karte hain. Minimum pause: bade decisions ke liye 24 ghante, medium ke liye 30 minute. Tumhara IQ nahi girta — decision quality girti hai. Time ek antidote hai."}},
+
+  {correct:3,
+   en:{q:"Everyone in your social circle is excited about an investment opportunity. You haven't done your research. What should you do?",
+       hint:"(The crowd's excitement is data — but it's not the data you think it is)",
+       opts:["Invest quickly before it's too late — social proof means it's probably good","Ask the most successful person in the group what they think","Skip it — if everyone knows about it, the best opportunity has passed","Research independently before deciding — the crowd's excitement tells you about psychology, not value"],
+       feedback:"✅ Research independently. This is Social Proof Bias — the tendency to assume that what many people do must be correct. But crowds amplify momentum, not accuracy. Most market bubbles, scams, and bad group decisions are built on exactly this: 'everyone's doing it.' The crowd's excitement is data about human emotion, not about the actual quality of the opportunity. Verify independently before trusting consensus."},
+   hi:{q:"Aapke social circle mein sab ek investment opportunity ko lekar excited hain. Research nahi ki abhi tak. Kya karna chahiye?",
+       hint:"(Crowd ki excitement data hai — lekin jo data tum soch rahe ho woh nahi)",
+       opts:["Jaldi invest karo isse pehle ki late ho — social proof matlab probably achha hai","Group ke sabse successful person se puchho woh kya sochte hain","Skip karo — agar sab jaante hain toh best opportunity nikal chuki hai","Decide karne se pehle independently research karo — crowd ki excitement psychology ke baare mein bataati hai, value ke nahi"],
+       feedback:"✅ Independently research karo. Yeh Social Proof Bias hai — yeh tendency ki jo bahut log karte hain woh sahi hoga. Lekin crowds accuracy nahi — momentum amplify karti hain. Zyaadatar market bubbles, scams, aur group decisions isi pe bane hain: 'sab kar rahe hain.' Crowd ki excitement human emotion ke baare mein data hai, opportunity ki actual quality ke baare mein nahi. Consensus trust karne se pehle independently verify karo."}},
+
+  {correct:1,
+   en:{q:"You're asked to estimate how long a project will take. Your gut says 3 weeks. What's the psychologically smarter estimate?",
+       hint:"(There's a very specific, well-documented reason your gut estimate is almost certainly wrong)",
+       opts:["3 weeks — trusting your gut is underrated","4–5 weeks — humans systemically underestimate time due to the Planning Fallacy, ignoring past similar delays","2 weeks — ambitious targets create productive pressure","Ask your team, then pick the median estimate"],
+       feedback:"✅ Add a buffer — 4-5 weeks. The Planning Fallacy is one of the most replicated findings in psychology: humans consistently underestimate how long tasks take, even when they know this bias exists. We focus on the ideal scenario, ignoring past delays, unexpected obstacles, and Murphy's Law. The fix: look at how long similar projects actually took in the past, not how long you imagine this one will take."},
+   hi:{q:"Ek project kitne time mein hoga estimate karna hai. Gut keh raha hai 3 hafte. Psychologically smarter estimate kya hai?",
+       hint:"(Ek bahut specific, well-documented reason hai ki tumhara gut estimate almost certainly galat hai)",
+       opts:["3 hafte — gut pe trust karna underrated hai","4–5 hafte — humans systematically time underestimate karte hain Planning Fallacy ki wajah se, past delays ignore kar ke","2 hafte — ambitious targets productive pressure create karte hain","Team se puchho, phir median estimate lo"],
+       feedback:"✅ Buffer add karo — 4-5 hafte. Planning Fallacy psychology ki sabse replicated findings mein se ek hai: humans consistently underestimate karte hain kaam mein kitna time lagega, chahe yeh bias jaante bhi hon. Hum ideal scenario pe focus karte hain, past delays, unexpected obstacles, aur Murphy's Law ignore kar ke. Fix: socho ki similar projects actually kitne time mein complete hue the past mein, na ki imagine karo yeh kitne mein hoga."}},
+
+  {correct:2,
+   en:{q:"You have two options: stay in a comfortable but stagnant situation, or take a risk with uncertain upside. You keep choosing to stay. What's really driving that?",
+       hint:"(This isn't laziness. It's a specific psychological mechanism that affects almost everyone)",
+       opts:["Wisdom — not every risk is worth taking","Rational calculation — the current situation is genuinely better","Status Quo Bias — the brain treats any change as a potential loss, making inaction feel safe even when it isn't","Fear of failure — you need more confidence before acting"],
+       feedback:"✅ Status Quo Bias. The brain treats the current state as the default and frames any change as a risk of 'losing' what you have. But staying put IS a decision — it has costs too. The question is never 'should I change vs. stay safe?' — it's 'what are the actual costs and benefits of each path, including the cost of doing nothing?' Inaction has a price. You're just not being charged it visibly."},
+   hi:{q:"Do options hain: comfortable lekin stagnant situation mein raho, ya uncertain upside ke saath risk lo. Baar baar rukna choose karte ho. Actually kya drive kar raha hai?",
+       hint:"(Yeh aalas nahi hai. Yeh ek specific psychological mechanism hai jo almost sabko affect karta hai)",
+       opts:["Wisdom — har risk lene layak nahi hota","Rational calculation — current situation genuinely better hai","Status Quo Bias — brain kisi bhi change ko potential loss treat karta hai, inaction ko safe banata hai chahe ho na ho","Failure ka darr — act karne se pehle zyada confidence chahiye"],
+       feedback:"✅ Status Quo Bias. Brain current state ko default maanta hai aur koi bhi change ko 'jo hai usse kho dene' ka risk frame karta hai. Lekin rukna bhi ek decision hai — uske bhi costs hain. Sawaal kabhi 'change karoon ya safe rahu?' nahi hai — 'dono paths ke actual costs aur benefits kya hain, kuch na karne ki cost including?' Inaction ka price hota hai. Sirf dikhta nahi."}},
+
+  {correct:0,
+   en:{q:"You've just made a big decision and it turned out badly. What is the psychologically healthiest AND most useful response?",
+       hint:"(Most people do one of two things — both are wrong)",
+       opts:["Analyse what information you had at decision-time vs. now, separate process quality from outcome quality, extract the lesson","Convince yourself the decision was actually fine — the outcome was just bad luck","Harshly criticise yourself to ensure you take it seriously next time","Move on quickly and avoid thinking about it to protect your confidence"],
+       feedback:"✅ Separate process from outcome. This is the antidote to Resulting — judging a decision by its outcome rather than the quality of thinking that produced it. Good decisions can lead to bad outcomes (you followed sound reasoning but reality was unpredictable). Bad decisions can lead to good outcomes (lucky). Judge the process: 'With what I knew then, was my reasoning sound?' If yes, bad outcome = bad luck. If no, that's your actual lesson."},
+   hi:{q:"Abhi ek bada decision liya aur badly nikla. Psychologically sabse healthy AUR useful response kya hai?",
+       hint:"(Zyaadatar log do cheezein karte hain — dono galat hain)",
+       opts:["Analyse karo ki decision ke waqt kya information thi vs. ab kya hai, process quality aur outcome quality alag karo, lesson nikalo","Khud ko convince karo ki decision actually theek tha — outcome sirf bad luck tha","Khud ko harshly criticise karo taaki agli baar seriously lo","Jaldi aage badho aur iske baare mein sochna avoid karo confidence protect karne ke liye"],
+       feedback:"✅ Process aur outcome alag karo. Yeh Resulting ka antidote hai — decision ko uski outcome se judge karna, na ki jo thinking use produce kiye uski quality se. Good decisions bad outcomes de sakte hain (reasoning sound tha but reality unpredictable thi). Bad decisions good outcomes de sakte hain (lucky). Process judge karo: 'Jo tab pata tha, kya meri reasoning sound thi?' Agar haan, bad outcome = bad luck. Agar nahi, yahi asli lesson hai."}},
+
+  {correct:3,
+   en:{q:"You feel extremely confident about a decision. Research shows expert confidence and expert accuracy are often uncorrelated. What's the wise response to your own confidence?",
+       hint:"(Confidence is a feeling. Competence is a fact. They often don't match.)",
+       opts:["Trust the confidence — your gut is processing more than your logic knows","Share the decision with people you know will agree, to validate the confidence","Make the decision quickly before doubt can creep in","Treat your confidence as a signal to check your reasoning more carefully, not less"],
+       feedback:"✅ High confidence = audit your reasoning harder. This is the Dunning-Kruger insight reversed: true experts know how much they don't know, which makes them more careful. Extreme confidence is often a red flag that you're in shallow water — you haven't yet discovered the depth of what you don't know. Ask: 'What would I have to believe for this decision to be wrong?' If you can't think of anything, you haven't looked hard enough."},
+   hi:{q:"Ek decision ke baare mein bahut confident feel ho raha hai. Research kehti hai expert confidence aur expert accuracy often uncorrelated hote hain. Apni confidence ke baare mein wise response kya hai?",
+       hint:"(Confidence ek feeling hai. Competence ek fact hai. Yeh often match nahi karte.)",
+       opts:["Confidence pe trust karo — tumhara gut logic se zyada process kar raha hai","Jo agree karenge unhe decision share karo, confidence validate karne ke liye","Jaldi decision lo isse pehle ki doubt aa jaye","Apni confidence ko signal maano ki reasoning aur carefully check karo, kam nahi"],
+       feedback:"✅ High confidence = reasoning ko zyada hardily audit karo. Yeh Dunning-Kruger insight reversed hai: true experts jaante hain ki kitna nahi jaante, isliye zyada careful hote hain. Extreme confidence aksar ek red flag hai ki shallow water mein ho — abhi tak depth nahi discover ki jo nahi jaante. Puchho: 'Agar yeh decision galat nikla toh mujhe kya believe karna hoga?' Agar kuch nahi socha, to kaafi dhundha nahi."}},
+
+  {correct:1,
+   en:{q:"You regret a past decision deeply and keep replaying what could have been. What does psychological science say is the most growth-producing response?",
+       hint:"(Regret is not the enemy — it's how you use it that matters)",
+       opts:["Suppress the regret — dwelling on the past changes nothing","Use the regret as specific information: 'What value did this reveal I wasn't honouring?' Then act on that value going forward","Accept that some decisions are just bad luck and move on","Forgive yourself completely and never think about it again"],
+       feedback:"✅ Extract the value signal from the regret. Research by psychologist Neal Roese shows that regret is one of the most functional emotions — it reveals precisely what we value. The question isn't 'how do I stop feeling this?' — it's 'what is this feeling specifically telling me about what matters to me?' Regret about inaction is usually more persistent than regret about action. The cure isn't suppression — it's using the signal to make a different decision going forward."},
+   hi:{q:"Ek past decision deeply regret karte ho aur baar baar replay karte ho kya ho sakta tha. Psychological science kehti hai sabse zyada growth-producing response kya hai?",
+       hint:"(Regret dushman nahi hai — yeh matter karta hai ki tum isse kaise use karte ho)",
+       opts:["Regret suppress karo — past pe dwelling kuch nahi badalta","Regret ko specific information ki tarah use karo: 'Iska matlab kya value reveal hui jo main honour nahi kar raha tha?' Phir aage us value pe act karo","Maano ki kuch decisions sirf bad luck hote hain aur aage badho","Khud ko poori tarah maaf karo aur kabhi mat socho"],
+       feedback:"✅ Regret se value signal extract karo. Psychologist Neal Roese ki research dikhati hai ki regret sabse functional emotions mein se ek hai — yeh precisely reveal karta hai ki hum kya value karte hain. Sawaal 'yeh feel karna kaise band karoon?' nahi hai — 'yeh feeling specifically mujhe kya bata rahi hai ki mere liye kya matter karta hai?' Inaction ka regret action ke regret se zyada persistent hota hai. Cure suppression nahi — signal use karna hai aage alag decision lene ke liye."}},
+
+  {correct:0,
+   en:{q:"You're about to decide but notice you're thinking about how you'll explain this choice to others. What psychological trap are you in?",
+       hint:"(The audience in your head is making the decision, not you)",
+       opts:["Anticipated regret from social judgment — you're optimising for how the decision looks, not what it actually is. Pause and decide for your own values.","Healthy caution — considering social consequences is smart decision-making","Overthinking — just trust your instinct and stop second-guessing","Impostor syndrome — you doubt your own judgment too much"],
+       feedback:"✅ You're optimising for the audience, not the outcome. This is Social Judgment Anticipation — decisions made to look good to others rather than to be good. It's one of the most common causes of regret. The diagnostic question: 'If no one would ever know what I chose or why, would I make the same decision?' If your answer changes, you've found the distortion. Decide for your future self, not your audience's current approval."},
+   hi:{q:"Decision lene wale ho lekin notice kiya ki soch rahe ho ki is choice ko doosron ko kaise explain karoge. Kis psychological trap mein ho?",
+       hint:"(Tumhare dimaag ka audience decision le raha hai, tum nahi)",
+       opts:["Social judgment ka anticipated regret — decision actually kya hai usse nahi, kaise dikhta hai usse optimize kar rahe ho. Pause karo aur apni values ke liye decide karo.","Healthy caution — social consequences consider karna smart decision-making hai","Overthinking — bas instinct pe trust karo aur second-guessing band karo","Impostor syndrome — apne judgment pe bahut zyada doubt kar rahe ho"],
+       feedback:"✅ Tum audience ke liye optimize kar rahe ho, outcome ke liye nahi. Yeh Social Judgment Anticipation hai — achhe dikhne ke liye decisions, achhe hone ke liye nahi. Yeh regret ka sabse common cause hai. Diagnostic sawaal: 'Agar koi kabhi nahi jaanta kya choose kiya aur kyun, kya same decision leta?' Agar jawaab badal jaata, distortion wahan hai. Apne future self ke liye decide karo, na ki audience ki current approval ke liye."}},
+
 ];
 
-let currentQ = 0;
-let score = 0;
-let answered = false;
 
-function openQuiz() {
-  currentQ = 0; score = 0; answered = false;
-  document.getElementById('quizView').style.display = 'block';
-  document.getElementById('scoreView').style.display = 'none';
+
+let currentQ=0,score=0,answered=false;
+
+function openQuiz(){
+  currentQ=0;score=0;answered=false;
+  document.getElementById('quizView').style.display='block';
+  document.getElementById('scoreView').style.display='none';
   document.getElementById('quizOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  renderQ();
+  document.body.style.overflow='hidden';
+  const lb=document.getElementById('langToggleBtn');
+  if(lb)lb.textContent=quizLang==='en'?'🇮🇳 Hinglish':'🇬🇧 English';
+  renderQ();playClick();
 }
-function closeQuiz() {
+function closeQuiz(){
   document.getElementById('quizOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  document.body.style.overflow='';playClick();
 }
-function overlayClick(e) {
-  if (e.target === document.getElementById('quizOverlay')) closeQuiz();
-}
+function overlayClick(e){if(e.target===document.getElementById('quizOverlay'))closeQuiz();}
 
-function renderQ() {
-  const q = QUESTIONS[currentQ];
-  answered = false;
-  const num = currentQ + 1;
-  document.getElementById('qNum').textContent = `Question ${num} of ${QUESTIONS.length}`;
-  document.getElementById('progFill').style.width = ((num / QUESTIONS.length) * 100) + '%';
-  document.getElementById('qText').textContent = q.q;
-  document.getElementById('qHint').textContent = q.hint;
-
-  const letters = ['A','B','C','D'];
-  const opts = document.getElementById('qOpts');
-  opts.innerHTML = '';
-  q.opts.forEach((o, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'opt-btn';
-    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${o}</span>`;
-    btn.onclick = () => selectOpt(i, btn);
-    opts.appendChild(btn);
+function renderQ(){
+  const q=QUESTIONS[currentQ],ql=q[quizLang];
+  answered=false;
+  const num=currentQ+1;
+  document.getElementById('qNum').textContent=`Question ${num} of ${QUESTIONS.length}`;
+  document.getElementById('progFill').style.width=((num/QUESTIONS.length)*100)+'%';
+  document.getElementById('qText').textContent=ql.q;
+  document.getElementById('qHint').textContent=ql.hint;
+  const letters=['A','B','C','D'],opts=document.getElementById('qOpts');
+  opts.innerHTML='';
+  ql.opts.forEach((o,i)=>{
+    const btn=document.createElement('button');btn.className='opt-btn';
+    btn.innerHTML=`<span class="opt-letter">${letters[i]}</span><span>${o}</span>`;
+    btn.onclick=()=>selectOpt(i,btn);opts.appendChild(btn);
   });
-
-  const fb = document.getElementById('qFeedback');
-  fb.style.display = 'none'; fb.textContent = '';
-  document.getElementById('qNext').style.display = 'none';
-
-  // Scroll to top of quiz box
-  document.getElementById('quizBox').scrollTop = 0;
+  const fb=document.getElementById('qFeedback');
+  fb.style.display='none';fb.innerHTML='';
+  document.getElementById('qNext').style.display='none';
+  document.getElementById('quizBox').scrollTop=0;
 }
 
-function selectOpt(idx, btn) {
-  if (answered) return;
-  answered = true;
-  const q = QUESTIONS[currentQ];
-  const btns = document.querySelectorAll('.opt-btn');
-
-  btns.forEach(b => b.disabled = true);
-
-  if (idx === q.correct) {
-    score++;
-    btn.classList.add('correct');
-    const fb = document.getElementById('qFeedback');
-    fb.className = 'quiz-feedback correct-fb';
-    fb.innerHTML = q.feedback;
-    fb.style.display = 'block';
+function selectOpt(idx,btn){
+  if(answered)return;answered=true;
+  const q=QUESTIONS[currentQ],ql=q[quizLang];
+  const btns=document.querySelectorAll('.opt-btn');
+  btns.forEach(b=>b.disabled=true);
+  const fb=document.getElementById('qFeedback');
+  if(idx===q.correct){
+    score++;btn.classList.add('correct');
+    fb.className='quiz-feedback correct-fb';fb.innerHTML=ql.feedback;
+    fb.style.display='block';playCorrect();
   } else {
-    btn.classList.add('wrong');
-    btns[q.correct].classList.add('correct');
-    const fb = document.getElementById('qFeedback');
-    fb.className = 'quiz-feedback wrong-fb';
-    fb.innerHTML = `<span class="fb-icon">❌</span> Not quite! The answer was <strong>${['A','B','C','D'][q.correct]}</strong>. ${q.feedback.replace('✅ ','')}`;
-    fb.style.display = 'block';
+    btn.classList.add('wrong');btns[q.correct].classList.add('correct');
+    fb.className='quiz-feedback wrong-fb';
+    fb.innerHTML=`<span class="fb-icon">❌</span> ${quizLang==='en'?'Not quite! Answer was':'Nahi yaar! Sahi jawaab tha'} <strong>${['A','B','C','D'][q.correct]}</strong>. ${ql.feedback.replace('✅ ','')}`;
+    fb.style.display='block';playWrong();
   }
-
-  const nextBtn = document.getElementById('qNext');
-  nextBtn.style.display = 'block';
-  nextBtn.textContent = currentQ < QUESTIONS.length - 1 ? 'Next Question →' : 'See My Results 🎯';
-  setTimeout(() => { document.getElementById('quizBox').scrollTop = 999; }, 100);
+  const nb=document.getElementById('qNext');nb.style.display='block';
+  nb.textContent=currentQ<QUESTIONS.length-1?(quizLang==='en'?'Next Question →':'Agla Sawaal →'):(quizLang==='en'?'See My Results 🎯':'Result Dekho 🎯');
+  setTimeout(()=>{document.getElementById('quizBox').scrollTop=999;},100);
 }
 
-function nextQ() {
-  currentQ++;
-  if (currentQ >= QUESTIONS.length) {
-    showScore();
+function nextQ(){
+  playClick();currentQ++;
+  if(currentQ>=QUESTIONS.length)showScore();else renderQ();
+}
+
+function showScore(){
+  playComplete();
+  document.getElementById('quizView').style.display='none';
+  document.getElementById('scoreView').style.display='block';
+  document.getElementById('scoreNum').textContent=`${score}/13`;
+  const isHi=quizLang==='hi';
+  let emoji,title,verdict;
+  if(score===13){
+    emoji='🧠✨';
+    title=isHi?'Aap Khud Psychology Ho':'You Are Psychology Itself';
+    verdict=isHi?'13/13 — Ya toh aap psychology padhte ho, ya insan ko observe karte karte centuries beet gayi hain. Aap ne shayad answer padhe bhi nahi, seedha jawaab pata tha.':'13/13 — Either you study psychology, or you\'ve been observing humans for centuries. You probably already knew before reading the options.';
+  } else if(score>=10){
+    emoji='🔮';
+    title=isHi?'Bahut Jyada Self-Aware Insaan':'Highly Self-Aware Human';
+    verdict=isHi?`${score}/13 — Tumhara brain apne aap se bahut seedha baat karta hai, jo rare hai. Zyaadatar log self-awareness se bachte hain kyunki woh inconvenient truth laati hai.`:`${score}/13 — Your brain is brutally honest with itself, which is rare. Most people score lower because self-awareness requires confronting inconvenient truths.`;
+  } else if(score>=7){
+    emoji='🌊';
+    title=isHi?'Theek Thaak Self-Aware':'Pleasantly Self-Aware';
+    verdict=isHi?`${score}/13 — Tumhe apne baare mein reasonable idea hai, lekin kuch cute se blind spots bhi hain jo zindagi interesting banate hain.`:`${score}/13 — You understand yourself reasonably well, but there are lovely blind spots keeping life interesting.`;
+  } else if(score>=4){
+    emoji='🌙';
+    title=isHi?'Khushi Se Anjaan':'Delightfully Oblivious';
+    verdict=isHi?`${score}/13 — Tum vibes aur instinct pe chal rahe ho, jismein apna ek alag wisdom hota hai.`:`${score}/13 — You're operating on vibes and instinct, which has its own wisdom.`;
   } else {
-    renderQ();
+    emoji='🎭';
+    title=isHi?'Gloriously Mysterious':'Gloriously Unaware';
+    verdict=isHi?`${score}/13 — Ya toh randomly click kiya, ya tumhara brain itna mysterious hai ki Freud bhi diagnose nahi kar paata.`:`${score}/13 — Either you answered randomly, or your brain is so mysterious that even Freud couldn't diagnose it.`;
   }
+  document.getElementById('scoreEmoji').textContent=emoji;
+  document.getElementById('scoreTitle').textContent=title;
+  document.getElementById('scoreVerdict').textContent=verdict;
+  document.getElementById('quizBox').scrollTop=0;
+  const rb=document.getElementById('restartBtn');
+  if(rb)rb.textContent=isHi?'🔄 Dobara Khelein':'🔄 Try Again';
 }
 
-function showScore() {
-  document.getElementById('quizView').style.display = 'none';
-  document.getElementById('scoreView').style.display = 'block';
-  document.getElementById('scoreNum').textContent = `${score}/13`;
-
-  let emoji, title, verdict;
-  if (score === 13) {
-    emoji = '🧠✨'; title = 'You Are Psychology Itself';
-    verdict = 'Either you study psychology, or you\'ve been observing humans for centuries. 13/13 means your self-awareness is dangerously high. You probably already knew the answer before reading the options.';
-  } else if (score >= 10) {
-    emoji = '🔮'; title = 'Highly Self-Aware Human';
-    verdict = `${score}/13 — Your brain is brutally honest with itself, which is rare. Most people score much lower because self-awareness requires confronting inconvenient truths. You seem comfortable with those.`;
-  } else if (score >= 7) {
-    emoji = '🌊'; title = 'Pleasantly Self-Aware';
-    verdict = `${score}/13 — You understand yourself reasonably well, but there are still some lovely blind spots keeping life interesting. That's not a bad thing. Perfect self-awareness would be exhausting.`;
-  } else if (score >= 4) {
-    emoji = '🌙'; title = 'Delightfully Oblivious';
-    verdict = `${score}/13 — You're operating on vibes and instinct, which has its own kind of wisdom honestly. Your brain keeps secrets from you for entertainment purposes. This is fine.`;
-  } else {
-    emoji = '🎭'; title = 'Gloriously Unaware';
-    verdict = `${score}/13 — Either you answered randomly, or your brain has achieved a level of mystery that even Freud couldn't diagnose. Either way, the uncertainty makes you interesting.`;
-  }
-
-  document.getElementById('scoreEmoji').textContent = emoji;
-  document.getElementById('scoreTitle').textContent = title;
-  document.getElementById('scoreVerdict').textContent = verdict;
-  document.getElementById('quizBox').scrollTop = 0;
-}
-
-function restartQuiz() { openQuiz(); }
+function restartQuiz(){playClick();openQuiz();}
 
 /* ══ CONTENT + THEMES ══ */
 const D={
@@ -1028,6 +1024,7 @@ function setTheme(t){
   document.querySelector('.'+SWM[t]).classList.add('on');
   renderCards(t);localStorage.setItem('yk_theme',t);
 }
+
 
 const saved=localStorage.getItem('yk_theme')||'dark';
 setTheme(saved);
